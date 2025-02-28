@@ -54,6 +54,7 @@ pageextension 58068 "WP Physical Inventory Journal" extends "Phys. Inventory Jou
         TxtStr: Text;
         FileName: Text;
         CRLF: TEXT[2];
+        UTF: TextEncoding;
         UnitPrice: decimal;
     begin
         CRLF[1] := 13;
@@ -62,7 +63,7 @@ pageextension 58068 "WP Physical Inventory Journal" extends "Phys. Inventory Jou
         LRecIJL.setrange("Journal Batch Name", Rec."Journal Batch Name");
         LRecIJL.setrange("Journal Template Name", Rec."Journal Template Name");
         if LRecIJL.FindFirst() then begin
-            TempBlob.CreateOutStream(OutStr);
+            TempBlob.CreateOutStream(OutStr, TextEncoding::UTF8);
             FileName := rec."Journal Batch Name" + rec."Journal Batch Name" + '.csv';
             repeat
                 clear(LRecRS);
@@ -90,12 +91,14 @@ pageextension 58068 "WP Physical Inventory Journal" extends "Phys. Inventory Jou
                         // CustDiscGroup: Code[20]
                         UnitPrice := PriceUtil.GetValidRetailPrice2(LRecIJL."Location Code", LRecIJL."Item No.", LRecIJL."Posting Date", 0T, LRecIJL."Unit of Measure Code",
                         LRecIJL."Variant Code", LRecItem."VAT Bus. Posting Gr. (Price)", '', lrecrs."Default Price Group", '', '');
+
                         TxtStr := LRecBarc."Barcode No." + ',' + LRecIJL.Description + ',' + FORMAT(UnitPrice) + CRLF;
+
                         OutStr.WriteText(TxtStr);
                     until LRecBarc.next = 0;
                 end;
             until LRecIJL.Next() = 0;
-            TempBlob.CreateInStream(InStr);
+            TempBlob.CreateInStream(InStr, TextEncoding::UTF8);
             DownloadFromStream(InStr, '', '', '', FileName);
         end;
     end;
