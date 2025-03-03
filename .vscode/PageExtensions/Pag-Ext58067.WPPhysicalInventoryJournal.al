@@ -1,5 +1,21 @@
 pageextension 58068 "WP Physical Inventory Journal" extends "Phys. Inventory Journal"
 {
+    layout
+    {
+        addlast(Control1)
+        {
+            field("Barcode"; Rec."LSC Barcode")
+            {
+                ApplicationArea = All;
+            }
+
+            field("Unit Price"; Rec."Unit Price")
+            {
+                ApplicationArea = All;
+            }
+        }
+    }
+
     actions
     {
         addbefore(Print)
@@ -146,6 +162,52 @@ pageextension 58068 "WP Physical Inventory Journal" extends "Phys. Inventory Jou
                     lrecijl.validate("Qty. (Phys. Inventory)", lDecQty);
                     lrecijl.Modify();
                 end;
+            end;
+        end;
+    end;
+
+    trigger OnAfterGetRecord()
+    var
+        LRecIJL: Record "Item Journal Line";
+        LRecBarc: record "LSC Barcodes";
+        LRecItem: Record Item;
+        LRecRS: Record "LSC Retail Setup";
+        TempBlob: Codeunit "Temp Blob";
+        PriceUtil: Codeunit "LSC Retail Price Utils";
+        OutStr: OutStream;
+        InStr: InStream;
+        TxtStr: Text;
+        FileName: Text;
+        CRLF: TEXT[2];
+        UTF: TextEncoding;
+        UnitPrice: decimal;
+    begin
+        begin
+            if Rec."Item No." = '' then
+                exit;
+
+            clear(LRecRS);
+            lrecrs.get;
+
+            clear(LRecItem);
+            lrecitem.get(Rec."Item No.");
+
+            if lrecitem.get(LRecIJL."Item No.") then;
+            clear(LRecBarc);
+            LRecBarc.setrangE("Item No.", Rec."Item No.");
+            if Rec."Unit of Measure Code" <> '' then
+                LRecBarc.setrange("Unit of Measure Code", Rec."Unit of Measure Code");
+            if LRecBarc."Variant Code" <> '' then
+                LRecBarc.SetRange("Variant Code", Rec."Variant Code");
+            if LRecBarc.FindFirst() then begin
+                repeat
+
+                    Rec."Unit Price" := PriceUtil.GetValidRetailPrice2(Rec."Location Code", Rec."Item No.", Rec."Posting Date", 0T, Rec."Unit of Measure Code",
+                                Rec."Variant Code", LRecItem."VAT Bus. Posting Gr. (Price)", '', lrecrs."Default Price Group", '', '');
+
+                    Rec."LSC Barcode" := LRecBarc."Barcode No.";
+
+                until LRecBarc.next = 0;
             end;
         end;
     end;
