@@ -5,7 +5,7 @@ codeunit 70000 "Consignment Util"
         VendNo := pVendNo;
         StoreNo := pStoreNo;
         StartDate := pStartDate;
-        EndDate := EndDate;
+        EndDate := pEndDate;
     end;
 
     procedure DeleteSalesDateBySession()
@@ -213,7 +213,7 @@ codeunit 70000 "Consignment Util"
                             POSSales."Net Price Excl Tax" := POSSales."Total Excl Tax" / POSSales.Quantity;
 
                         POSSales.Cost := POSSales."Net Amount" - POSSales."Consignment Amount";
-
+                        POSSales."Cost Incl Tax" := POSSales.Cost + ((POSSales.Cost * POSVAT."VAT %") / 100); //UAT-025:Cost Inc Tax :=No9+No.11
                         getMDR(SalesEntry, possales."MDR Rate", possales."MDR Weight", possales."MDR Amount");
                         POSSales."MDR Rate Pctg" := possales."MDR Rate" * 100;
                         if pVendor <> '' then begin
@@ -432,7 +432,7 @@ codeunit 70000 "Consignment Util"
                             POSSales."Net Price Excl Tax" := POSSales."Total Excl Tax" / POSSales.Quantity;
 
                         POSSales.Cost := POSSales."Net Amount" - POSSales."Consignment Amount";
-
+                        POSSales."Cost Incl Tax" := POSSales.Cost + ((POSSales.Cost * POSVAT."VAT %") / 100); //UAT-025:Cost Inc Tax :=No9+No.11
                         getMDR(SalesEntry, possales."MDR Rate", possales."MDR Weight", possales."MDR Amount");
                         POSSales."MDR Rate Pctg" := possales."MDR Rate" * 100;
                         if pVendor <> '' then begin
@@ -1416,6 +1416,9 @@ codeunit 70000 "Consignment Util"
                                 POSSales.UOM := SalesEntry."Unit of Measure";
                                 POSSales."Net Amount" := -SalesEntry."Net Amount";
                                 POSSales."VAT Amount" := -SalesEntry."VAT Amount";
+                                //UAT-025: Fix Tax Rate always is 0 
+                                POSSales."Tax Rate" := POSVAT."VAT %";
+                                //end UAT-025
                                 //POSSales."Discount Amount" := ((100 - posvat."VAT %") / 100) * SalesEntry."Discount Amount";
                                 POSSales."Discount Amount" := SalesEntry."Discount Amount" / ((100 + POSVAT."VAT %") / 100);
                                 POSSales."Promotion No." := SalesEntry."Promotion No.";
@@ -1451,7 +1454,7 @@ codeunit 70000 "Consignment Util"
                                 //CalcConsignment(POSSales."Vendor No.", POSSales.Date, POSSales, POSSales."Consignment Type");
                                 POSSales."Consignment %" := CalcConsignPerc(POSSales);
                                 IF POSSales."Consignment %" <> 0 THEN
-                                    POSSales."Consignment Amount" := ROUND(POSSales."Net Amount" * (POSSales."Consignment %" / 100))
+                                    POSSales."Consignment Amount" := ROUND(POSSales."Net Amount" * (POSSales."Consignment %" / 100)) //Profit Amount
                                 ELSE
                                     POSSales."Consignment Amount" := 0;
 
@@ -1483,7 +1486,6 @@ codeunit 70000 "Consignment Util"
                                 end;
 
                                 POSSales."Gross Price" := SalesEntry."Net Price";
-
                                 if POSSales.Quantity <> 0 then begin
                                     POSSales."Disc. Amount From Std. Price" := round(POSSales."Discount Amount" / POSSales.Quantity); //20210104
                                     //POSSales."Net Price Incl Tax" := SalesEntry.Price - SalesEntry."Discount Amount" / POSSales.Quantity; //20210104
@@ -1495,15 +1497,17 @@ codeunit 70000 "Consignment Util"
 
                                 //POSSales."Total Incl Tax" := -(POSSales."Net Price Incl Tax" * SalesEntry.Quantity);
                                 POSSales."Total Incl Tax" := -(POSSales."Net Price Incl Tax" * SalesEntry.Quantity);
+                                possales."Total Excl Tax" := -SalesEntry."Net Amount"; //UAT-025 :No8.RGV_Payment Notice
 
                                 if (SalesEntry."VAT Amount" <> 0) and (SalesEntry.Quantity <> 0) then
                                     POSSales.Tax := -(SalesEntry."VAT Amount" / SalesEntry.Quantity);
+
                                 POSSales."Total Tax Collected" := SalesEntry."VAT Amount";
-                                possales."Total Excl Tax" := -SalesEntry."Net Amount";
                                 if POSSales.Quantity <> 0 then
                                     POSSales."Net Price Excl Tax" := POSSales."Total Excl Tax" / POSSales.Quantity; //20201224
 
-                                POSSales.Cost := POSSales."Net Amount" - POSSales."Consignment Amount";
+                                POSSales.Cost := POSSales."Net Amount" - POSSales."Consignment Amount"; ///Consign Cost
+                                POSSales."Cost Incl Tax" := POSSales.Cost + ((POSSales.Cost * POSVAT."VAT %") / 100); //UAT-025:Cost Inc Tax :=No9+No.11
                                 getMDR(SalesEntry, possales."MDR Rate", possales."MDR Weight", possales."MDR Amount");//eddy
                                 POSSales."MDR Rate Pctg" := possales."MDR Rate" * 100;
                                 POSSales.insert;
@@ -1562,7 +1566,9 @@ codeunit 70000 "Consignment Util"
                     be."Consignment %" := ce."Consignment %";
                     be."VAT Code" := ce."VAT Code";
                     be."Total Excl Tax" := ce."Total Excl Tax";
+                    be."Cost Incl Tax" := ce."Cost Incl Tax";//UAT-025
                     be."Total Incl Tax" := ce."Total Incl Tax";
+
                     be."Total Tax" := be."Total Incl Tax" - be."Total Excl Tax";
                     be.Profit := round(be."Total Excl Tax" * (be."Consignment %" * 0.01));
                     be.Cost := round(be."Total Excl Tax" - be.Profit);
@@ -1580,6 +1586,7 @@ codeunit 70000 "Consignment Util"
                     be."Total Excl Tax" += ce."Total Excl Tax";
                     be."Total Incl Tax" += ce."Total Incl Tax";
                     be."Total Tax" := be."Total Incl Tax" - be."Total Excl Tax";
+                    be."Cost Incl Tax" += ce."Cost Incl Tax"; //uat-025
                     be.Profit := Round(be."Total Excl Tax" * (be."Consignment %" * 0.01));
                     be.Cost := Round(be."Total Excl Tax" - be.Profit);
                     be."MDR Amount" += ce."MDR Amount";
@@ -1832,106 +1839,111 @@ codeunit 70000 "Consignment Util"
         MPGSetup.setrange("Billing Period ID", bp.ID);
         mpgsetup.setrange("Contract Type", MPGSetup."Contract Type"::Normal);
         if MPGSetup.FindFirst() then begin
-            repeat
-                clear(LRecVen);
-                lrecven.setrange("Is Consignment Vendor", true);
-                lrecven.setrange("No.", MPGSetup."Vendor No.");
-                if lrecven.findfirst then begin
-                    repeat
-                        lrecven.TestField("Linked Customer No.");
-                        clear(LRecsH);
-                        lrecsh."Document Type" := lrecsh."Document Type"::Invoice;
-                        lrecsh.Validate("Sell-to Customer No.", LRecVen."Linked Customer No.");
-                        lrecsh."Document Date" := today;
-                        LRecSH."Posting Date" := bp."End Date";
-                        lrecsh."Your Reference" := 'CONSIGN';
-                        //lrecsh."Consign. Document No." := ch."Document No.";
-                        //LRecSH."External Document No." := ch."Document No."; //20240124-+
-                        lrecsh.Invoice := true;
-                        if lrecsh.insert(True) then begin
-                            SINo := lrecsh."No.";
-                            lrecSh.validate("Document Date");
-                            LRecSH.Validate("Posting Date");
-                            if RetailSetup."Def. Shortcut Dim. 1 - Sales" <> '' then
-                                LRecSH.Validate("Shortcut Dimension 1 Code", RetailSetup."Def. Shortcut Dim. 1 - Sales");
-                            LRecSH.Modify();
+            if Today >= MPGSetup."End Date" then begin // UAT-025: Add condition to get MGP at month end
+                repeat
+                    clear(LRecVen);
+                    lrecven.setrange("Is Consignment Vendor", true);
+                    lrecven.setrange("No.", MPGSetup."Vendor No.");
+                    if lrecven.findfirst then begin
+                        repeat
+                            lrecven.TestField("Linked Customer No.");
+                            clear(LRecsH);
+                            lrecsh."Document Type" := lrecsh."Document Type"::Invoice;
+                            lrecsh.Validate("Sell-to Customer No.", LRecVen."Linked Customer No.");
+                            lrecsh."Document Date" := today;
+                            LRecSH."Posting Date" := bp."End Date";
+                            lrecsh."Your Reference" := 'CONSIGN';
+                            //lrecsh."Consign. Document No." := ch."Document No.";
+                            //LRecSH."External Document No." := ch."Document No."; //20240124-+
+                            lrecsh.Invoice := true;
+                            if lrecsh.insert(True) then begin
+                                SINo := lrecsh."No.";
+                                lrecSh.validate("Document Date");
+                                LRecSH.Validate("Posting Date");
+                                if RetailSetup."Def. Shortcut Dim. 1 - Sales" <> '' then
+                                    LRecSH.Validate("Shortcut Dimension 1 Code", RetailSetup."Def. Shortcut Dim. 1 - Sales");
+                                LRecSH.Modify();
 
-                            clear(ConsignAmt);
-                            clear(MPGAmt);
-                            clear(MDRAmt);
-                            clear(ConsignEntries);
-                            ConsignEntries.setrange("Vendor No.", lrecven."No.");
-                            //ConsignEntries.setrange(Status, ConsignEntries.Status::"Posted");
-                            if ConsignEntries.findfirst then begin
-                                repeat
-                                    if (ConsignEntries."Start Date" >= bp."Start Date") and (ConsignEntries."End Date" <= bp."End Date") then begin
-                                        ConsignEntries.CalcFields("Total Excl. Tax", "Total MDR Amount");
-                                        ConsignAmt += ConsignEntries."Total Excl. Tax";
-                                        MDRAmt += ConsignEntries."Total MDR Amount";
-                                    end;
-                                until ConsignEntries.next = 0;
-                            end;
+                                clear(ConsignAmt);
+                                clear(MPGAmt);
+                                clear(MDRAmt);
+                                clear(ConsignEntries);
+                                ConsignEntries.setrange("Vendor No.", lrecven."No.");
+                                //ConsignEntries.setrange(Status, ConsignEntries.Status::"Posted");
+                                if ConsignEntries.findfirst then begin
+                                    repeat
+                                        if (ConsignEntries."Start Date" >= bp."Start Date") and (ConsignEntries."End Date" <= bp."End Date") then begin
+                                            ConsignEntries.CalcFields("Total Excl. Tax", "Total MDR Amount");
+                                            ConsignAmt += ConsignEntries."Total Excl. Tax";
+                                            MDRAmt += ConsignEntries."Total MDR Amount";
+                                            //ConsignAmt += ConsignEntries."Billing - Total Profit" + MDRAmt;
+                                        end;
+                                    until ConsignEntries.next = 0;
+                                end;
 
-                            BillableMPGAmt := MPGSetup."Expected Gross Profit" - ConsignAmt;
+                                BillableMPGAmt := MPGSetup."Expected Gross Profit" - ConsignAmt;
 
-                            clear(LRecSL);
-                            LRecSL."Document Type" := LRecSL."Document Type"::Invoice;
-                            LRecSL.Validate("Document No.", SINo);
-                            LRecSL."Line No." := 100;
-                            lrecsl.Description := 'Total Con.Amt : ' + format(ConsignAmt);
-                            lrecsl.insert;
+                                clear(LRecSL);
+                                LRecSL."Document Type" := LRecSL."Document Type"::Invoice;
+                                LRecSL.Validate("Document No.", SINo);
+                                LRecSL."Line No." := 100;
+                                lrecsl.Description := 'Total Con.Amt : ' + format(ConsignAmt);
+                                lrecsl.insert;
 
-                            LRecSL."Line No." := 200;
-                            lrecsl.Description := 'Min. Prof. Grtee : ' + format(MPGSetup."Expected Gross Profit");
-                            lrecsl.insert;
+                                LRecSL."Line No." := 200;
+                                lrecsl.Description := 'Min. Prof. Grtee : ' + format(MPGSetup."Expected Gross Profit");
+                                lrecsl.insert;
 
-                            LRecSL."Line No." := 300;
-                            lrecsl.Description := 'Billable Amt : ' + format(BillableMPGAmt);
-                            lrecsl.insert;
-
-                            LRecSL."Line No." := 400;
-                            lrecsl.Description := 'MDR Amt : ' + format(MDRAmt);
-                            lrecsl.insert;
-
-                            if BillableMPGAmt > 0 then begin
-                                LRecSL."Line No." := 1000;
-                                lrecsl.Type := lrecsl.Type::"G/L Account";
-                                lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
-                                lrecsl.validate("Location Code", MPGSetup."Store No.");
-                                lrecsl.validate(Quantity, 1);
-                                lrecsl.validate("Unit Price", BillableMPGAmt);
+                                LRecSL."Line No." := 300;
                                 lrecsl.Description := 'Billable Amt : ' + format(BillableMPGAmt);
-                                recStore.Reset();
-                                recStore.SetCurrentKey("Location Code");
-                                recStore.SetRange("Location Code", LRecSL."Location Code");
-                                if recStore.FindFirst() then
-                                    LRecSL.Validate("Shortcut Dimension 1 Code", recStore."Global Dimension 1 Code")
-                                else
-                                    LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
-                                lrecsl.insert(true);
-                            end;
+                                lrecsl.insert;
 
-                            if MDRAmt > 0 then begin
-                                LRecSL."Line No." := 2000;
-                                lrecsl.Type := lrecsl.Type::"G/L Account";
-                                lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
-                                lrecsl.validate("Location Code", MPGSetup."Store No.");
-                                lrecsl.validate(Quantity, 1);
-                                lrecsl.validate("Unit Price", MDRAmt);
-                                lrecsl.Description := 'MDR Amount : ' + format(MDRAmt);
-                                recStore.Reset();
-                                recStore.SetCurrentKey("Location Code");
-                                recStore.SetRange("Location Code", LRecSL."Location Code");
-                                if recStore.FindFirst() then
-                                    LRecSL.Validate("Shortcut Dimension 1 Code", recStore."Global Dimension 1 Code")
-                                else
-                                    LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
-                                lrecsl.insert(true);
+                                LRecSL."Line No." := 400;
+                                lrecsl.Description := 'MDR Amt : ' + format(MDRAmt);
+                                lrecsl.insert;
+
+                                if BillableMPGAmt > 0 then begin
+                                    LRecSL."Line No." := 1000;
+                                    lrecsl.Type := lrecsl.Type::"G/L Account";
+                                    lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
+                                    lrecsl.validate("Location Code", MPGSetup."Store No.");
+                                    lrecsl.validate(Quantity, 1);
+                                    lrecsl.validate("Unit Price", BillableMPGAmt);
+                                    lrecsl.Description := 'Billable Amt : ' + format(BillableMPGAmt);
+                                    recStore.Reset();
+                                    recStore.SetCurrentKey("Location Code");
+                                    recStore.SetRange("Location Code", LRecSL."Location Code");
+                                    if recStore.FindFirst() then
+                                        LRecSL.Validate("Shortcut Dimension 1 Code", recStore."Global Dimension 1 Code")
+                                    else
+                                        LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
+                                    lrecsl.insert(true);
+                                end;
+
+                                if MDRAmt > 0 then begin
+                                    LRecSL."Line No." := 2000;
+                                    lrecsl.Type := lrecsl.Type::"G/L Account";
+                                    lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
+                                    lrecsl.validate("Location Code", MPGSetup."Store No.");
+                                    lrecsl.validate(Quantity, 1);
+                                    lrecsl.validate("Unit Price", MDRAmt);
+                                    lrecsl.Description := 'MDR Amount : ' + format(MDRAmt);
+                                    recStore.Reset();
+                                    recStore.SetCurrentKey("Location Code");
+                                    recStore.SetRange("Location Code", LRecSL."Location Code");
+                                    if recStore.FindFirst() then
+                                        LRecSL.Validate("Shortcut Dimension 1 Code", recStore."Global Dimension 1 Code")
+                                    else
+                                        LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
+                                    lrecsl.insert(true);
+                                end;
                             end;
-                        end;
-                    until lrecven.next = 0;
-                end;
-            until MPGSetup.next = 0;
+                        until lrecven.next = 0;
+
+                    end;
+                until MPGSetup.next = 0;
+
+            end;
         end;
         // if (sino <> '') then begin
         //     ch."Sales Invoice No." := sino;
@@ -1996,7 +2008,7 @@ codeunit 70000 "Consignment Util"
         tempBlob.CreateInStream(pdfInStream);
         bodyText := 'Good day Sir/Ms,<br></br>I hope this email finds you well. Attached is the monthly POS statement and Tax Invoice for your perusal.<br></br>If you have any inquiries, do not hesitate to contact us.<br></br>Have a good day!<br></br>Regards,<br></br>Isetan of Japan Sdn Bhd';
         //sendEmail('eddy.ong@rgtech.com.my', 'Hi this the test email.', 'Please find the attachment etc etc..', pdfInStream);
-        emailmessage.Create('waijun.chan@rgtech.com.my; eddy.ong@rgtech.com.my', 'Monthly POS Statement & Tax Invoice', bodyText, true);
+        emailmessage.Create('huan.tva@radiantglobal.com.vn; tiang.sj@radiantglobal.com.vn;lam.hn@radiantglobal.com.vn', 'Monthly POS Statement & Tax Invoice', bodyText, true);
         emailmessage.AddAttachment('Invoice.pdf', 'PDF', pdfInStream);
         email.send(emailmessage, enum::"Email Scenario"::Default);
     end;

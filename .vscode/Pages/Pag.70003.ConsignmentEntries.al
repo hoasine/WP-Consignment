@@ -90,6 +90,7 @@ page 70003 "Consignment Entries"
                 field("Net Price Excl Tax"; Rec."Net Price Excl Tax") { }
                 field("Total Excl Tax"; Rec."Total Excl Tax") { }
                 field(Cost; Rec.Cost) { }
+                field("Cost Incl Tax"; Rec."Cost Incl Tax") { }
                 field("Consignment Amount"; Rec."Consignment Amount") { Caption = 'Profit Excl Tax'; }
                 field("Consignment Amount (LCY)"; Rec."Consignment Amount (LCY)") { Caption = 'Profit (LCY)'; Visible = false; }
                 field("Consignment %"; Rec."Consignment %") { }

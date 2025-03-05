@@ -47,7 +47,7 @@ table 70016 "WP MPG Setup"
         {
             Caption = 'End Date';
             FieldClass = FlowField;
-            CalcFormula = lookup("WP B.Inc Billing Periods"."Start Date" WHERE("ID" = FIELD("Billing Period ID")));
+            CalcFormula = lookup("WP B.Inc Billing Periods"."End Date" WHERE("ID" = FIELD("Billing Period ID")));
         }
         field(9; "Expected Gross Profit"; Decimal)
         {

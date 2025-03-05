@@ -120,6 +120,10 @@ table 70003 "Consignment Entries"
         {
             Caption = 'POS Terminal No.';
         }
+        field(1003; "Cost Incl Tax"; Decimal)
+        {
+            Caption = 'Cost Incl Tax';
+        }
         field(50000; "Item Category Description"; Text[100])
         {
             FieldClass = FlowField;

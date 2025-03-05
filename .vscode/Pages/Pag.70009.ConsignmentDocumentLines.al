@@ -36,6 +36,7 @@ page 70009 "Consignment Document Lines"
                 field("Total Incl Tax"; Rec."Total Incl Tax") { ApplicationArea = All; ToolTip = 'Specifies the value of the Total Incl Tax field.'; }
                 field("Consignment Type"; Rec."Consignment Type") { ApplicationArea = All; ToolTip = 'Specifies the value of the Consignment Type field.'; }
                 field("Consignment %"; Rec."Consignment %") { ApplicationArea = All; ToolTip = 'Specifies the value of the GP % field.'; }
+                field("Cost Incl Tax"; Rec."Cost Incl Tax") { ApplicationArea = All; ToolTip = 'Specifies the value included Tax'; }
                 field("Applied to Billing Line No."; Rec."Applied to Billing Line No.") { ApplicationArea = All; ToolTip = 'Specifies the value of the Applied to Billing Line No. field.'; }
                 field("Receipt No."; Rec."Receipt No.") { ApplicationArea = All; ToolTip = 'Specifies the value of the Receipt No. field.'; }
                 field("MDR Rate Pctg"; Rec."MDR Rate Pctg") { ApplicationArea = All; ToolTip = 'Specifies the value of the MDR Rate Pctg field.'; }

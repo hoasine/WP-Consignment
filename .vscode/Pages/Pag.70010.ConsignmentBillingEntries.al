@@ -78,6 +78,11 @@ page 70010 "Consignment Billing Entries"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Total Excl Tax field.';
                 }
+                field("Cost Incl Tax"; Rec."Cost Incl Tax")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the cost incl Tax field.';
+                }
                 field("Total Incl Tax"; Rec."Total Incl Tax")
                 {
                     ApplicationArea = All;
