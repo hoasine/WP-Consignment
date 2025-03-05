@@ -49,6 +49,7 @@ table 70008 "Consignment Billing Entries"
         }
         field(9; "Consignment %"; Decimal)
         {
+            DecimalPlaces = 0 : 2;
             Caption = 'Profit Margin %';
             DataClassification = ToBeClassified;
         }
@@ -115,6 +116,10 @@ table 70008 "Consignment Billing Entries"
         {
             Caption = 'Quantity';
             DataClassification = ToBeClassified;
+        }
+        field(22; "Cost Incl Tax"; Decimal)
+        {
+            Caption = 'Cost Incl Tax'; //UAT-025 Add Cost WITH TAX
         }
         field(50100; "MDR Rate"; Decimal) { }
         field(50101; "MDR Weight"; Decimal) { }

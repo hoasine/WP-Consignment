@@ -44,7 +44,11 @@ table 70001 "Consignment Rate"
                 CheckDate;
             end;
         }
-        field(6; "Consignment %"; Decimal) { Caption = 'Profit Margin %'; }
+        field(6; "Consignment %"; Decimal)
+        {
+            DecimalPlaces = 0 : 2;
+            Caption = 'Profit Margin %';
+        }
         field(10; "Description"; Text[50])
         {
             FieldClass = FlowField;
