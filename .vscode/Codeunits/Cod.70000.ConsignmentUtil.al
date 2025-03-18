@@ -624,8 +624,8 @@ codeunit 70000 "Consignment Util"
         //withStoreCode
         ConsignRate.Reset();
         ConsignRate.SetRange("Vendor No.", pPosSales."Vendor No.");
-        ConsignRate.SetRange("Start Date", 0D, pPosSales.Date);
-        ConsignRate.SetFilter("End Date", '>=%1|%2', pPosSales.Date, 0D);
+        ConsignRate.SetFilter("Start Date", '<=%1', pPosSales.Date);
+        ConsignRate.SetFilter("End Date", '>=%1', pPosSales.Date);
         ConsignRate.SetRange("Item No.", pPosSales."Item No.");
         //ConsignRate.SetRange("Consignment Type", pPosSales."Consignment Type");
         ConsignRate.SetRange("Store No.", pPosSales."Store No.");
@@ -641,8 +641,8 @@ codeunit 70000 "Consignment Util"
         if intConsignRate = 0 then begin
             ConsignRate.Reset();
             ConsignRate.SetRange("Vendor No.", pPosSales."Vendor No.");
-            ConsignRate.SetRange("Start Date", 0D, pPosSales.Date);
-            ConsignRate.SetFilter("End Date", '>=%1|%2', pPosSales.Date, 0D);
+            ConsignRate.SetFilter("Start Date", '<=%1', pPosSales.Date);
+            ConsignRate.SetFilter("End Date", '>=%1', pPosSales.Date);
             ConsignRate.setrange("Item No.", pPosSales."Item No.");
             //ConsignRate.SetRange("Consignment Type", pPosSales."Consignment Type");
             ConsignRate.SetFilter("Store No.", '');
@@ -1416,6 +1416,7 @@ codeunit 70000 "Consignment Util"
                                 POSSales.UOM := SalesEntry."Unit of Measure";
                                 POSSales."Net Amount" := -SalesEntry."Net Amount";
                                 POSSales."VAT Amount" := -SalesEntry."VAT Amount";
+
                                 //UAT-025: Fix Tax Rate always is 0 
                                 POSSales."Tax Rate" := POSVAT."VAT %";
                                 //end UAT-025
@@ -1450,7 +1451,7 @@ codeunit 70000 "Consignment Util"
                                 POSSales."Session ID" := SESSIONID;
                                 POSSales."Created By" := USERID;
                                 POSSales."Created Date" := CURRENTDATETIME;
-
+                                POSSales."Discount %" := SalesEntry."Discount %";
                                 //CalcConsignment(POSSales."Vendor No.", POSSales.Date, POSSales, POSSales."Consignment Type");
                                 POSSales."Consignment %" := CalcConsignPerc(POSSales);
                                 IF POSSales."Consignment %" <> 0 THEN
@@ -1873,8 +1874,9 @@ codeunit 70000 "Consignment Util"
                                 if ConsignEntries.findfirst then begin
                                     repeat
                                         if (ConsignEntries."Start Date" >= bp."Start Date") and (ConsignEntries."End Date" <= bp."End Date") then begin
-                                            ConsignEntries.CalcFields("Total Excl. Tax", "Total MDR Amount");
-                                            ConsignAmt += ConsignEntries."Total Excl. Tax";
+                                            // ConsignEntries.CalcFields("Total Excl. Tax", "Total MDR Amount");//UAT-025
+                                            ConsignEntries.CalcFields("Billing - Total Profit", "Total MDR Amount");
+                                            ConsignAmt += ConsignEntries."Billing - Total Profit";
                                             MDRAmt += ConsignEntries."Total MDR Amount";
                                             //ConsignAmt += ConsignEntries."Billing - Total Profit" + MDRAmt;
                                         end;

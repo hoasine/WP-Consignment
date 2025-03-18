@@ -152,7 +152,7 @@ table 70003 "Consignment Entries"
             DecimalPlaces = 0 : 3;
         }
         field(50102; "MDR Amount"; Decimal) { }
-        field(50103; "MDR Rate Pctg"; Decimal) { }
+        field(50103; "MDR Rate Pctg"; Decimal) { DecimalPlaces = 0 : 3; }
     }
     keys
     {

@@ -7,6 +7,7 @@ pageextension 58067 WPTenderTypeSetup extends "LSC Tender Type Setup List"
             field("Integration MDR Rate"; Rec."Integration MDR Rate")
             {
                 ApplicationArea = All;
+                DecimalPlaces = 0 : 3;
             }
         }
     }

@@ -121,8 +121,8 @@ table 70008 "Consignment Billing Entries"
         {
             Caption = 'Cost Incl Tax'; //UAT-025 Add Cost WITH TAX
         }
-        field(50100; "MDR Rate"; Decimal) { }
-        field(50101; "MDR Weight"; Decimal) { }
+        field(50100; "MDR Rate"; Decimal) { DecimalPlaces = 0 : 3; }
+        field(50101; "MDR Weight"; Decimal) { DecimalPlaces = 0 : 3; }
         field(50102; "MDR Amount"; Decimal) { }
     }
     keys

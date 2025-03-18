@@ -39,8 +39,8 @@ page 70009 "Consignment Document Lines"
                 field("Cost Incl Tax"; Rec."Cost Incl Tax") { ApplicationArea = All; ToolTip = 'Specifies the value included Tax'; }
                 field("Applied to Billing Line No."; Rec."Applied to Billing Line No.") { ApplicationArea = All; ToolTip = 'Specifies the value of the Applied to Billing Line No. field.'; }
                 field("Receipt No."; Rec."Receipt No.") { ApplicationArea = All; ToolTip = 'Specifies the value of the Receipt No. field.'; }
-                field("MDR Rate Pctg"; Rec."MDR Rate Pctg") { ApplicationArea = All; ToolTip = 'Specifies the value of the MDR Rate Pctg field.'; }
-                field("MDR Weight"; Rec."MDR Weight") { ApplicationArea = All; ToolTip = 'Specifies the value of the MDR Weight field.'; }
+                field("MDR Rate Pctg"; Rec."MDR Rate Pctg") { DecimalPlaces = 0 : 3; ; ApplicationArea = All; ToolTip = 'Specifies the value of the MDR Rate Pctg field.'; }
+                field("MDR Weight"; Rec."MDR Weight") { DecimalPlaces = 0 : 3; ApplicationArea = All; ToolTip = 'Specifies the value of the MDR Weight field.'; }
                 field("MDR Amount"; Rec."MDR Amount") { ApplicationArea = All; ToolTip = 'Specifies the value of the MDR Amount field.'; }
             }
         }

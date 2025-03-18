@@ -88,12 +88,13 @@ page 70003 "Consignment Entries"
                 field(Tax; Rec.Tax * -1) { }
                 field("Total Tax Collected"; Rec."Total Tax Collected" * -1) { }
                 field("Net Price Excl Tax"; Rec."Net Price Excl Tax") { }
-                field("Total Excl Tax"; Rec."Total Excl Tax") { }
+                field("Total Excl Tax"; Rec."Total Excl Tax") { Caption = 'Sale Price'; }
+                field("Tax Rate"; Rec."Tax Rate") { Caption = 'Tax rate'; }
                 field(Cost; Rec.Cost) { }
-                field("Cost Incl Tax"; Rec."Cost Incl Tax") { }
+                field("Cost Incl Tax"; Rec."Cost Incl Tax") { Caption = 'Cost Incl Tax'; }
                 field("Consignment Amount"; Rec."Consignment Amount") { Caption = 'Profit Excl Tax'; }
                 field("Consignment Amount (LCY)"; Rec."Consignment Amount (LCY)") { Caption = 'Profit (LCY)'; Visible = false; }
-                field("Consignment %"; Rec."Consignment %") { }
+                field("Consignment %"; Rec."Consignment %") { Caption = 'Profit Margin %'; }
                 field("Return No Sales"; Rec."Return No Sales") { }
                 field("Member Card No."; Rec."Member Card No.") { }
                 field("Consignment Type"; Rec."Consignment Type") { }
