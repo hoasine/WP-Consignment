@@ -1,3 +1,14 @@
+tableextension 58041 WPItemExt extends "Item"
+{
+    fields
+    {
+        modify("LSC Special Group Code")
+        {
+            TableRelation = "LSC Item Special Groups".Code;
+        }
+    }
+}
+
 tableextension 58040 WPItemJournalLine extends "Item Journal Line"
 {
     fields
@@ -41,8 +52,6 @@ tableextension 58040 WPItemJournalLine extends "Item Journal Line"
 
             clear(SP);
             SP.SetRange("Item No.", Rec."Item No.");
-            SP.FindFirst();
-
             if SP.FindFirst() then begin
                 repeat
                     "LSC Special Group" := SP."Special Group Code";

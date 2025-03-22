@@ -62,6 +62,7 @@ pageextension 58068 "WP Physical Inventory Journal" extends "Phys. Inventory Jou
             }
         }
     }
+
     local procedure ExportToVietA()
     var
         LRecIJL: Record "Item Journal Line";
