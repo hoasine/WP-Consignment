@@ -153,6 +153,9 @@ table 70003 "Consignment Entries"
         }
         field(50102; "MDR Amount"; Decimal) { }
         field(50103; "MDR Rate Pctg"; Decimal) { DecimalPlaces = 0 : 3; }
+        field(50104; "Contract ID"; Code[20]) { Caption = 'Contract ID'; }
+        field(50105; "Billing Period ID"; Code[20]) { Caption = 'Billing Period ID'; }
+        field(50106; "Expected Gross Profit"; Decimal) { Caption = 'Expected Gross Profit'; }
     }
     keys
     {

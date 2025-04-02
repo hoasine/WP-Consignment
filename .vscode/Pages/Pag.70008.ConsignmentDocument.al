@@ -479,10 +479,11 @@ page 70008 "Consignment Document"
         if rec."End Date" = 0D then Error(LText001, 'Ending Date');
         checkDuplicate();//002
         Clear(cuConsignUtil);
-        cuConsignUtil.DeleteSalesDateByDocument(rec."Document No.");
+
+        cuConsignUtil.DeleteSalesDateByDocument_ALL(rec."Document No.");
         cuConsignUtil.GetInfo(rec."Vendor No.", rec."Start Date", rec."End Date", StoreNo);
         cuConsignUtil.CopySalesData2(rec."Start Date", rec."End Date", StoreNo, rec."Vendor No.", rec."Document No.");
-        cuconsignutil.CreateBillingEntries(rec."Document No.");
+        //cuconsignutil.CreateBillingEntries(rec."Document No.");
         CurrPage.Update(false);
     end;
 
@@ -500,7 +501,7 @@ page 70008 "Consignment Document"
         cuConsignUtil: Codeunit "Consignment Util";
     begin
         clear(cuConsignUtil);
-        cuConsignUtil.DeleteSalesDateByDocument(rec."Document No.");
+        cuConsignUtil.DeleteSalesDateByDocument_ALL(rec."Document No.");
         CurrPage.Update(false);
     end;
     //002-

@@ -303,8 +303,8 @@ page 70003 "Consignment Entries"
         Clear(cuConsignUtil);
         cuConsignUtil.DeleteSalesDateBySession();
         cuConsignUtil.GetInfo(VendNo, dtStart, dtEnd, StoreNo);
-        //cuConsignUtil.CopySalesData(dtStart, dtEnd, StoreNo, VendNo);
-        cuConsignUtil.CopySalesData2(dtStart, dtEnd, StoreNo, VendNo);
+        cuConsignUtil.CopySalesData(dtStart, dtEnd, StoreNo, VendNo);
+        //cuConsignUtil.CopySalesData2(dtStart, dtEnd, StoreNo, VendNo);
         CurrPage.Update(false);
     end;
 

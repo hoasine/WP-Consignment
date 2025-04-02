@@ -25,6 +25,21 @@ page 70010 "Consignment Billing Entries"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Sales Date field.';
                 }
+                field("Contract ID"; Rec."Contract ID")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Contract ID field.';
+                }
+                field("Billing Period ID"; Rec."Billing Period ID")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Billing Period ID field.';
+                }
+                field("Expected Gross Profit"; Rec."Expected Gross Profit")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Expected Gross Profit field.';
+                }
                 field("Vendor No."; Rec."Vendor No.")
                 {
                     ApplicationArea = All;

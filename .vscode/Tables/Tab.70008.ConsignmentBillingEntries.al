@@ -124,6 +124,9 @@ table 70008 "Consignment Billing Entries"
         field(50100; "MDR Rate"; Decimal) { DecimalPlaces = 0 : 3; }
         field(50101; "MDR Weight"; Decimal) { DecimalPlaces = 0 : 3; }
         field(50102; "MDR Amount"; Decimal) { }
+        field(23; "Contract ID"; Code[20]) { Caption = 'Contract ID'; }
+        field(24; "Billing Period ID"; Code[20]) { Caption = 'Billing Period ID'; }
+        field(25; "Expected Gross Profit"; Decimal) { Caption = 'Expected Gross Profit'; }
     }
     keys
     {

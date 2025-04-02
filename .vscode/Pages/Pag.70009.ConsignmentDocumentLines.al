@@ -14,6 +14,21 @@ page 70009 "Consignment Document Lines"
                 field("Date"; Rec."Date") { ApplicationArea = All; ToolTip = 'Specifies the value of the Date field.'; }
                 field("Store No."; Rec."Store No.") { ApplicationArea = All; ToolTip = 'Specifies the value of the Store No. field.'; }
                 field("Vendor No."; Rec."Vendor No.") { ApplicationArea = All; ToolTip = 'Specifies the value of the Vendor No. field.'; }
+                field("Contract ID"; Rec."Contract ID")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Contract ID field.';
+                }
+                field("Billing Period ID"; Rec."Billing Period ID")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Billing Period ID field.';
+                }
+                field("Expected Gross Profit"; Rec."Expected Gross Profit")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Expected Gross Profit field.';
+                }
                 field(Division; Rec.Division) { ApplicationArea = All; ToolTip = 'Specifies the value of the Division field.'; }
                 field("Item Category"; Rec."Item Category") { ApplicationArea = All; ToolTip = 'Specifies the value of the Item Category field.'; }
                 field("Item Category Description"; Rec."Item Category Description") { ApplicationArea = All; ToolTip = 'Specifies the value of the Item Category Description field.'; }

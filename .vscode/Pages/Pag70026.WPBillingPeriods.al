@@ -44,6 +44,10 @@ page 70026 "WP Billing Periods"
                 {
                     ToolTip = 'Specifies the value of the Batch Is Done field.', Comment = '%';
                 }
+                field("Batch is Mng Fee "; Rec."Batch is Mng Fee")
+                {
+                    ToolTip = 'Specifies the value of the Batch is Mng Fee field.', Comment = '%';
+                }
                 field("Batch Timestamp"; Rec."Batch Timestamp")
                 {
                     ToolTip = 'Specifies the value of the Batch Timestamp field.', Comment = '%';

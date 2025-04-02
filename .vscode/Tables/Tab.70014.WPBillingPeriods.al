@@ -40,6 +40,10 @@ table 70014 "WP B.Inc Billing Periods"
         {
             Caption = 'Batch Timestamp';
         }
+        field(103; "Batch is Mng Fee"; Boolean)
+        {
+            Caption = 'Batch is Mng Fee';
+        }
         field(100; "Consignment Billing Type"; Option)
         {
             Caption = 'Consignment Billing Type';

@@ -146,6 +146,8 @@ table 70007 "Consignment Header"
         field(72; "Total Store UnPosted"; Integer) { }
         field(73; "Total Store UnPosted Amount"; Decimal) { }
         field(80; "Discrepancy"; Boolean) { }
+        field(81; "Contract ID"; Code[20]) { Caption = 'Contract ID'; }
+        field(82; "Billing Period ID"; Code[20]) { Caption = 'Billing Period ID'; }
 
     }
 
