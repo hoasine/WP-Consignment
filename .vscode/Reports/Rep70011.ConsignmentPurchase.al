@@ -1,78 +1,51 @@
-report 70010 "Daily Consignment Purchase"
+report 70011 "Consignment Purchase"
 {
     ApplicationArea = All;
-    Caption = 'Consignment Daily Purchase Report';
+    Caption = 'Consignment Purchase Report';
     UsageCategory = ReportsAndAnalysis;
-    RDLCLayout = '.vscode\ReportLayouts\\Rep.70010.WPDailyConsignPurchList.rdl';
+    RDLCLayout = '.vscode\ReportLayouts\\Rep.70011.ConsignmentPurchase.rdl';
     dataset
     {
         dataitem(CE; "Consignment Entries")
         {
-            RequestFilterFields = Date, "Store No.", Division, "Product Group", "Special Group";
+            RequestFilterFields = "Billing Period ID", "Store No.", Division, "Product Group", "Special Group";
             column(Brand; "Special Group") { }
             column(BrandName; BrandName) { }
             column(Quantity; Quantity) { }
             column(SalesPrice; "Total Incl Tax") { }
-            column(CostRate; CostRatePctg) { }
             column(CostPrice; CostPrice) { }
             column(VATCode; "VAT Code") { }
             column(TaxRate; "Tax Rate") { }
-            column(Tax; "VAT Amount") { }
-            column(Transaction_No_; "Transaction No.") { }
+            column(Tax; "Tax") { }
             column(ItemNo; "Item No.") { }
             column(Description; "Item Description") { }
-
             column(SalesAmount; "Total Incl Tax") { }
+            column(TotalExclTax; "Total Excl Tax") { }
+            column(Cost; "Cost") { }
             column(Store_No_; "Store No.") { }
             column(StoreName; StoreName) { }
             column(VendorNo; "Vendor No.") { }
             column(VendorName; VendorName) { }
-            column(DateFilter; DateFilter) { }
+            column(FromDateFilter; FromDateFilter) { }
+            column(ToDateFilter; ToDateFilter) { }
             column(Division; Division) { }
             column(DivisionName; DivisionName) { }
             column(Product_Group; "Product Group") { }
             column(Product_Group_Description; "Product Group Description") { }
             column(Date; Date) { }
-
-
-            // column(Date; "Date")
-            // {
-            // }
-            // column(LineDiscount; "Line Discount")
-            // {
-            // }
-            // column(LineNo; "Line No.")
-            // {
-            // }
-            // column(NetAmount; "Net Amount")
-            // {
-            // }
-            // column(NetPrice; "Net Price")
-            // {
-            // }
-            // column(POSTerminalNo; "POS Terminal No.")
-            // {
-            // }
-            // column(Price; Price)
-            // {
-            // }
-            // column(PriceGroupCode; "Price Group Code")
-            // {
-            // }
-            // column(StoreNo; "Store No.")
-            // {
-            // }
-            // column(StatementCode; "Statement Code")
-            // {
-            // }
+            column(VAT_Amount; "VAT Amount") { }
+            column(Tax_Rate; "Tax Rate") { }
 
             trigger OnPreDataItem()
             begin
-                DateFilter := ce.GetFilter(Date);
+                PeriodsFilter := ce.GetFilter("Billing Period ID");
                 StoreFilter := ce.GetFilter("Store No.");
                 DivisionFilter := ce.GetFilter(Division);
                 RPGFilter := ce.GetFilter("Product Group");
                 BrandFilter := ce.GetFilter("Special Group");
+
+                IF (PeriodsFilter = '') THEN
+                    ERROR('The report couldn’t be generated, because it was empty. Input data for the Period field.');
             end;
 
             trigger OnAfterGetRecord()
@@ -99,9 +72,17 @@ report 70010 "Daily Consignment Purchase"
                 clear(lrecdiv);
                 if lrecdiv.get(Division) then
                     DivisionName := lrecdiv.Description;
+
+                Clear(RecPeriods);
+                RecPeriods.SetRange("ID", ce."Billing Period ID");
+                if RecPeriods.FindFirst() then begin
+                    FromDateFilter := RecPeriods."Start Date";
+                    ToDateFilter := RecPeriods."End Date";
+                end;
             end;
         }
     }
+
     // requestpage
     // {
     //     layout
@@ -125,10 +106,14 @@ report 70010 "Daily Consignment Purchase"
     //     //     }
     //     // }
     // }
+
     var
+        RecPeriods: Record "WP B.Inc Billing Periods";
         costratepctg: Decimal;
         costprice: Decimal;
-        DateFilter: text;
+        PeriodsFilter: text;
+        FromDateFilter: Date;
+        ToDateFilter: Date;
         StoreFilter: text;
         DivisionFilter: text;
         RPGFilter: text;

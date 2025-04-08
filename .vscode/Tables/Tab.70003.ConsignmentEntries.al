@@ -29,11 +29,28 @@ table 70003 "Consignment Entries"
             end;
         }
         field(12; "Date"; Date) { }
-        field(13; "Vendor No."; Code[20]) { }
-        field(14; "Division"; Code[20]) { }
-        field(15; "Item Category"; Code[20]) { }
-        field(16; "Product Group"; Code[20]) { }
-        field(17; "Special Group"; Code[20]) { }
+        field(13; "Vendor No."; Code[20])
+        {
+            TableRelation = "Vendor"."No.";
+        }
+        field(14; "Division"; Code[20])
+        {
+            TableRelation = "LSC Division".Code;
+        }
+        field(15; "Item Category"; Code[20])
+        {
+            TableRelation = "Item Category".Code;
+
+        }
+        field(16; "Product Group"; Code[20])
+        {
+            TableRelation = "LSC Retail Product Group".Code;
+
+        }
+        field(17; "Special Group"; Code[20])
+        {
+            TableRelation = "LSC Item Special Groups".Code;
+        }
         field(18; "Product Group Description"; Text[100])
         {
             FieldClass = FlowField;
@@ -153,8 +170,16 @@ table 70003 "Consignment Entries"
         }
         field(50102; "MDR Amount"; Decimal) { }
         field(50103; "MDR Rate Pctg"; Decimal) { DecimalPlaces = 0 : 3; }
-        field(50104; "Contract ID"; Code[20]) { Caption = 'Contract ID'; }
-        field(50105; "Billing Period ID"; Code[20]) { Caption = 'Billing Period ID'; }
+        field(50104; "Contract ID"; Code[20])
+        {
+            Caption = 'Contract ID';
+            TableRelation = "WP Consignment Contracts".ID;
+        }
+        field(50105; "Billing Period ID"; Code[20])
+        {
+            Caption = 'Billing Period ID';
+            TableRelation = "WP B.Inc Billing Periods".ID;
+        }
         field(50106; "Expected Gross Profit"; Decimal) { Caption = 'Expected Gross Profit'; }
     }
     keys

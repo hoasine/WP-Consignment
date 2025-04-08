@@ -1493,7 +1493,11 @@ codeunit 70000 "Consignment Util"
                                                                 POSSales."Special Group" := ItemSpecialGrp."Special Group Code";
 
                                                             if CopyStr(ItemSpecialGrp."Special Group Code", 1, 1) = 'C' then
-                                                                POSSales."Special Group 2" := ItemSpecialGrp."Special Group Code";
+                                                                POSSales."Special Group 2" := ItemSpecialGrp."Special Group Code"
+                                                            else
+                                                                //Hoa them
+                                                                POSSales."Special Group" := ItemSpecialGrp."Special Group Code"
+
                                                         until ItemSpecialGrp.Next() = 0;
 
                                                     end;
@@ -1634,7 +1638,9 @@ codeunit 70000 "Consignment Util"
         end;
     end;
 
-    procedure CreateBillingEntries(DocNo: code[20]; pContract: code[20]; pBillingID: code[20])
+    procedure CreateBillingEntries(DocNo: code[20];
+            pContract: code[20];
+            pBillingID: code[20])
     var
         CE: Record "Consignment Entries";
         BE: Record "Consignment Billing Entries";
@@ -2340,7 +2346,7 @@ codeunit 70000 "Consignment Util"
                                 clear(ConsignEntries);
                                 ConsignEntries.setrange("Vendor No.", lrecven."No.");
                                 ConsignEntries.setrange("Contract ID", MPGSetup."Contract ID");
-                                ConsignEntries.setrange("Billing Period ID", MPGSetup."Billing Period ID")
+                                ConsignEntries.setrange("Billing Period ID", MPGSetup."Billing Period ID");
                                 //ConsignEntries.setrange(Status, ConsignEntries.Status::"Posted");
                                 if ConsignEntries.findfirst then begin
                                     repeat
