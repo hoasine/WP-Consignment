@@ -33,11 +33,9 @@ report 70010 "Daily Consignment Purchase"
             column(Product_Group; "Product Group") { }
             column(Product_Group_Description; "Product Group Description") { }
             column(Date; Date) { }
-
-
-            // column(Date; "Date")
-            // {
-            // }
+            column(costTax; "costTax")
+            {
+            }
             // column(LineDiscount; "Line Discount")
             // {
             // }
@@ -73,6 +71,8 @@ report 70010 "Daily Consignment Purchase"
                 DivisionFilter := ce.GetFilter(Division);
                 RPGFilter := ce.GetFilter("Product Group");
                 BrandFilter := ce.GetFilter("Special Group");
+
+                ce.SetFilter("Document No.", '<>%1', '');
             end;
 
             trigger OnAfterGetRecord()
@@ -83,7 +83,8 @@ report 70010 "Daily Consignment Purchase"
                 lrecdiv: Record "LSC Division";
             begin
                 CostRatePctg := round(100 - "Consignment %", 0.01);
-                costprice := "Total Excl Tax" * "Consignment %";
+                costprice := "Total Excl Tax" - "Consignment Amount"; //Total - profit amount
+                costTax := costprice * ("Tax Rate" / 100); //Total - profit amount
                 clear(LRecStore);
                 if LRecStore.Get("Store No.") then
                     StoreName := LRecStore.Name;
@@ -137,4 +138,5 @@ report 70010 "Daily Consignment Purchase"
         VendorName: text;
         BrandName: text;
         DivisionName: text;
+        costTax: Decimal;
 }
