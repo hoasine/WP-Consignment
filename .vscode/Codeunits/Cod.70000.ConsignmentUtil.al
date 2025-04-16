@@ -1408,6 +1408,7 @@ codeunit 70000 "Consignment Util"
         MGPSetup: Record "WP MPG Setup";
         ConsigPerc: Decimal;
         DiscPercSaleEntry: Decimal;
+        abc:record wpPOSTransLineExt extends "LSC POS Trans. Line";
     begin
         //Get all vendor setup for specific time range
         POSSales.Reset();
@@ -2229,7 +2230,7 @@ codeunit 70000 "Consignment Util"
 =======
                             if bp.Storage4 <> 0 then begin
 >>>>>>> 6603910934ef923605d60e3062afc74f95d1bb42
-       LRecSL."Line No." := 9000;
+LRecSL."Line No." := 9000;
                                 lrecsl.Type := lrecsl.Type::"G/L Account";
                                 lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
                                 lrecsl.validate("Location Code", bp."Store No.");
