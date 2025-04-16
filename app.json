@@ -16,7 +16,14 @@
       "publisher": "LS Retail",
       "name": "LS Central",
       "version": "24.1.21.1157"
+    },
+    {
+      "id": "7f23e19a-180a-42c2-bd78-49562a15c934",
+      "publisher": "World POS Sdn. Bhd.",
+      "name": "worldPOS-StaffAllowance",
+      "version": "1.0.0.19"
     }
+  
   ],
   "screenshots": [],
   "platform": "24.0.0.0",
