@@ -10,3 +10,16 @@ tableextension 58036 SalesInvHdr extends "Sales Invoice Header"
         }
     }
 }
+
+// tableextension 58038 SalesInvLine extends "Sales Invoice Line"
+// {
+//     fields
+//     {
+//         field(58000; "Contract ID"; Code[20])
+//         {
+//             Caption = 'Contract ID';
+//             TableRelation = "Consignment Header"."Document No.";
+//             DataClassification = ToBeClassified;
+//         }
+//     }
+// }

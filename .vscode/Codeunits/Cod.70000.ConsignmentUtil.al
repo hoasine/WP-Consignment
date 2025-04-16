@@ -1493,7 +1493,11 @@ codeunit 70000 "Consignment Util"
                                                                 POSSales."Special Group" := ItemSpecialGrp."Special Group Code";
 
                                                             if CopyStr(ItemSpecialGrp."Special Group Code", 1, 1) = 'C' then
-                                                                POSSales."Special Group 2" := ItemSpecialGrp."Special Group Code";
+                                                                POSSales."Special Group 2" := ItemSpecialGrp."Special Group Code"
+                                                            else
+                                                                //Hoa them
+                                                                POSSales."Special Group" := ItemSpecialGrp."Special Group Code"
+
                                                         until ItemSpecialGrp.Next() = 0;
 
                                                     end;
@@ -1634,7 +1638,9 @@ codeunit 70000 "Consignment Util"
         end;
     end;
 
-    procedure CreateBillingEntries(DocNo: code[20]; pContract: code[20]; pBillingID: code[20])
+    procedure CreateBillingEntries(DocNo: code[20];
+            pContract: code[20];
+            pBillingID: code[20])
     var
         CE: Record "Consignment Entries";
         BE: Record "Consignment Billing Entries";
@@ -2015,8 +2021,6 @@ codeunit 70000 "Consignment Util"
                                 LRecSH.Validate("Shortcut Dimension 1 Code", RetailSetup."Def. Shortcut Dim. 1 - Sales");
                             LRecSH.Modify();
 
-
-
                             if bp.Amount <> 0 then begin
                                 clear(LRecSL);
                                 LRecSL."Document Type" := LRecSL."Document Type"::Invoice;
@@ -2048,7 +2052,9 @@ codeunit 70000 "Consignment Util"
                                 else
                                     LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
                                 lrecsl.insert(true);
+                            end;
 
+                            if bp.Fixture <> 0 then begin
                                 LRecSL."Line No." := 2000;
                                 lrecsl.Type := lrecsl.Type::"G/L Account";
                                 lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
@@ -2068,7 +2074,9 @@ codeunit 70000 "Consignment Util"
                                 else
                                     LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
                                 lrecsl.insert(true);
+                            end;
 
+                            if bp.Parking <> 0 then begin
                                 LRecSL."Line No." := 3000;
                                 lrecsl.Type := lrecsl.Type::"G/L Account";
                                 lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
@@ -2088,7 +2096,9 @@ codeunit 70000 "Consignment Util"
                                 else
                                     LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
                                 lrecsl.insert(true);
+                            end;
 
+                            if bp.Promotion <> 0 then begin
                                 LRecSL."Line No." := 4000;
                                 lrecsl.Type := lrecsl.Type::"G/L Account";
                                 lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
@@ -2108,7 +2118,9 @@ codeunit 70000 "Consignment Util"
                                 else
                                     LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
                                 lrecsl.insert(true);
+                            end;
 
+                            if bp.Storage1 <> 0 then begin
                                 LRecSL."Line No." := 5000;
                                 lrecsl.Type := lrecsl.Type::"G/L Account";
                                 lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
@@ -2128,7 +2140,9 @@ codeunit 70000 "Consignment Util"
                                 else
                                     LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
                                 lrecsl.insert(true);
+                            end;
 
+                            if bp.Storage2 <> 0 then begin
                                 LRecSL."Line No." := 6000;
                                 lrecsl.Type := lrecsl.Type::"G/L Account";
                                 lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
@@ -2148,7 +2162,9 @@ codeunit 70000 "Consignment Util"
                                 else
                                     LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
                                 lrecsl.insert(true);
+                            end;
 
+                            if bp.Storage3 <> 0 then begin
                                 LRecSL."Line No." := 7000;
                                 lrecsl.Type := lrecsl.Type::"G/L Account";
                                 lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
@@ -2168,7 +2184,28 @@ codeunit 70000 "Consignment Util"
                                 else
                                     LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
                                 lrecsl.insert(true);
+                            end;
+                            // LRecSL."Line No." := 8000;
+                            // lrecsl.Type := lrecsl.Type::"G/L Account";
+                            // lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
+                            // lrecsl.validate("Location Code", bp."Store No.");
+                            // LRecSL.Validate("Gen. Bus. Posting Group", LRecVen."Gen. Bus. Posting Group");
+                            // LRecSL.Validate("VAT Bus. Posting Group", bp."VAT Bus. Posting Group");
+                            // LRecSL.Validate("VAT Prod. Posting Group", bp."VAT_ST3");
+                            // LRecSL.Validate("Unit of Measure Code", bp."UOM_ST3");
+                            // lrecsl.validate(Quantity, bp.Quantity_ST3);
+                            // lrecsl.validate("Unit Price", bp.Storage3);
+                            // lrecsl.Description := 'Phí lưu kho tủ nhỏ tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + bp."Contract Description";
+                            // recStore.Reset();
+                            // recStore.SetCurrentKey("Location Code");
+                            // recStore.SetRange("Location Code", LRecSL."Location Code");
+                            // if recStore.FindFirst() then
+                            //     LRecSL.Validate("Shortcut Dimension 1 Code", recStore."Global Dimension 1 Code")
+                            // else
+                            //     LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
+                            // lrecsl.insert(true);
 
+<<<<<<< HEAD
                                 /*  LRecSL."Line No." := 8000;
                                   lrecsl.Type := lrecsl.Type::"G/L Account";
                                   lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
@@ -2189,6 +2226,9 @@ codeunit 70000 "Consignment Util"
                                       LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
                                   lrecsl.insert(true);
                                     */
+=======
+                            if bp.Storage4 <> 0 then begin
+>>>>>>> 6603910934ef923605d60e3062afc74f95d1bb42
                                 LRecSL."Line No." := 9000;
                                 lrecsl.Type := lrecsl.Type::"G/L Account";
                                 lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
@@ -2208,7 +2248,9 @@ codeunit 70000 "Consignment Util"
                                 else
                                     LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
                                 lrecsl.insert(true);
+                            end;
 
+                            if bp.Storage5 <> 0 then begin
                                 LRecSL."Line No." := 10000;
                                 lrecsl.Type := lrecsl.Type::"G/L Account";
                                 lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
@@ -2228,7 +2270,9 @@ codeunit 70000 "Consignment Util"
                                 else
                                     LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
                                 lrecsl.insert(true);
+                            end;
 
+                            if bp.Locker <> 0 then begin
                                 LRecSL."Line No." := 11000;
                                 lrecsl.Type := lrecsl.Type::"G/L Account";
                                 lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
@@ -2239,7 +2283,7 @@ codeunit 70000 "Consignment Util"
                                 LRecSL.Validate("Unit of Measure Code", bp."UOM_Locker");
                                 lrecsl.validate(Quantity, bp.Quantity_Locker);
                                 lrecsl.validate("Unit Price", bp.Locker);
-                                lrecsl.Description := 'Phí thủ khóa nhỏ tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + bp."Contract Description";
+                                lrecsl.Description := 'Phí tủ khóa nhỏ tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + bp."Contract Description";
                                 recStore.Reset();
                                 recStore.SetCurrentKey("Location Code");
                                 recStore.SetRange("Location Code", LRecSL."Location Code");
@@ -2248,7 +2292,9 @@ codeunit 70000 "Consignment Util"
                                 else
                                     LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
                                 lrecsl.insert(true);
+                            end;
 
+                            if bp.Locker1 <> 0 then begin
                                 LRecSL."Line No." := 12000;
                                 lrecsl.Type := lrecsl.Type::"G/L Account";
                                 lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
@@ -2270,6 +2316,7 @@ codeunit 70000 "Consignment Util"
                                 lrecsl.insert(true);
                             end;
                         end;
+
                     until bp.Next() = 0;
                 end;
             until LRecVen.Next = 0;
@@ -2340,7 +2387,7 @@ codeunit 70000 "Consignment Util"
                                 clear(ConsignEntries);
                                 ConsignEntries.setrange("Vendor No.", lrecven."No.");
                                 ConsignEntries.setrange("Contract ID", MPGSetup."Contract ID");
-                                ConsignEntries.setrange("Billing Period ID", MPGSetup."Billing Period ID")
+                                ConsignEntries.setrange("Billing Period ID", MPGSetup."Billing Period ID");
                                 //ConsignEntries.setrange(Status, ConsignEntries.Status::"Posted");
                                 if ConsignEntries.findfirst then begin
                                     repeat
