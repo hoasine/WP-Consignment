@@ -9,7 +9,7 @@
       <am:Name>MSRB</am:Name>
       <am:Version>15.0.20283.0</am:Version>
     </am:UpdatedBy>
-    <am:LastModifiedTimestamp>2025-04-03T09:18:35.6064853Z</am:LastModifiedTimestamp>
+    <am:LastModifiedTimestamp>2025-04-16T09:46:24.4281239Z</am:LastModifiedTimestamp>
   </am:AuthoringMetadata>
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
@@ -710,7 +710,7 @@
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=sum(Fields!Cost.Value) * (Fields!Tax_Rate.Value / 100)</Value>
+                                  <Value>=sum(Fields!Tax.Value)</Value>
                                   <Style>
                                     <FontSize>7pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
@@ -1105,14 +1105,14 @@
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Tax3">
+                        <Textbox Name="Tax2">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Cost.Value) * (Fields!Tax_Rate.Value / 100)</Value>
+                                  <Value>=Sum(Fields!Tax.Value)</Value>
                                   <Style>
                                     <FontSize>7pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
