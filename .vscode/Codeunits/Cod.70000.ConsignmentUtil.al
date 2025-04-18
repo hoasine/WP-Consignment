@@ -1408,7 +1408,6 @@ codeunit 70000 "Consignment Util"
         MGPSetup: Record "WP MPG Setup";
         ConsigPerc: Decimal;
         DiscPercSaleEntry: Decimal;
-        abc:record wpPOSTransLineExt extends "LSC POS Trans. Line";
     begin
         //Get all vendor setup for specific time range
         POSSales.Reset();
@@ -1520,7 +1519,7 @@ codeunit 70000 "Consignment Util"
                                                     POSSales.Quantity := -SalesEntry.Quantity;
                                                     POSSales.Price := SalesEntry.Price;
                                                     POSSales.UOM := SalesEntry."Unit of Measure";
-                                                    POSSales."Net Amount" := -SalesEntry."Net Amount" + SalesEntry.;
+                                                    POSSales."Net Amount" := -SalesEntry."Net Amount";
                                                     POSSales."VAT Amount" := -SalesEntry."VAT Amount";
 
                                                     //UAT-025: Fix Tax Rate always is 0 
@@ -2044,7 +2043,7 @@ codeunit 70000 "Consignment Util"
                                 LRecSL.Validate("Unit of Measure Code", bp."UOM_Area");
                                 lrecsl.validate(Quantity, bp.Quantity_Area);
                                 lrecsl.validate("Unit Price", bp.Amount);
-                                lrecsl.Description := 'Phí quản lý tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + bp."Contract Description";
+                                lrecsl.Description := 'Phí quản lý tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + '-' + bp."Contract Description";
                                 recStore.Reset();
                                 recStore.SetCurrentKey("Location Code");
                                 recStore.SetRange("Location Code", LRecSL."Location Code");
@@ -2066,7 +2065,7 @@ codeunit 70000 "Consignment Util"
                                 LRecSL.Validate("Unit of Measure Code", bp."UOM_Fixture");
                                 lrecsl.validate(Quantity, bp.Quantity_Fixture);
                                 lrecsl.validate("Unit Price", bp.Fixture);
-                                lrecsl.Description := 'Phí quản lý quầy kệ tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + bp."Contract Description";
+                                lrecsl.Description := 'Phí quản lý quầy kệ tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + '-' + bp."Contract Description";
                                 recStore.Reset();
                                 recStore.SetCurrentKey("Location Code");
                                 recStore.SetRange("Location Code", LRecSL."Location Code");
@@ -2088,7 +2087,7 @@ codeunit 70000 "Consignment Util"
                                 LRecSL.Validate("Unit of Measure Code", bp."UOM_Parking");
                                 lrecsl.validate(Quantity, bp.Quantity_Parking);
                                 lrecsl.validate("Unit Price", bp.Parking);
-                                lrecsl.Description := 'Phí quản lý chỗ giữ xe tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + bp."Contract Description";
+                                lrecsl.Description := 'Phí quản lý chỗ giữ xe tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + '-' + bp."Contract Description";
                                 recStore.Reset();
                                 recStore.SetCurrentKey("Location Code");
                                 recStore.SetRange("Location Code", LRecSL."Location Code");
@@ -2110,7 +2109,7 @@ codeunit 70000 "Consignment Util"
                                 LRecSL.Validate("Unit of Measure Code", bp."UOM_Promotion");
                                 lrecsl.validate(Quantity, bp.Quantity_Promotion);
                                 lrecsl.validate("Unit Price", bp.Promotion);
-                                lrecsl.Description := 'Phí khuyến mãi tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + bp."Contract Description";
+                                lrecsl.Description := 'Phí khuyến mãi tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + '-' + bp."Contract Description";
                                 recStore.Reset();
                                 recStore.SetCurrentKey("Location Code");
                                 recStore.SetRange("Location Code", LRecSL."Location Code");
@@ -2132,7 +2131,7 @@ codeunit 70000 "Consignment Util"
                                 LRecSL.Validate("Unit of Measure Code", bp."UOM_ST1");
                                 lrecsl.validate(Quantity, bp.Quantity_ST1);
                                 lrecsl.validate("Unit Price", bp.Storage1);
-                                lrecsl.Description := 'Phí lưu kho tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + bp."Contract Description";
+                                lrecsl.Description := 'Phí lưu kho tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + '-' + bp."Contract Description";
                                 recStore.Reset();
                                 recStore.SetCurrentKey("Location Code");
                                 recStore.SetRange("Location Code", LRecSL."Location Code");
@@ -2154,7 +2153,7 @@ codeunit 70000 "Consignment Util"
                                 LRecSL.Validate("Unit of Measure Code", bp."UOM_ST2");
                                 lrecsl.validate(Quantity, bp.Quantity_ST2);
                                 lrecsl.validate("Unit Price", bp.Storage2);
-                                lrecsl.Description := 'Phí lưu kho tủ lớn tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + bp."Contract Description";
+                                lrecsl.Description := 'Phí lưu kho tủ lớn tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + '-' + bp."Contract Description";
                                 recStore.Reset();
                                 recStore.SetCurrentKey("Location Code");
                                 recStore.SetRange("Location Code", LRecSL."Location Code");
@@ -2176,7 +2175,7 @@ codeunit 70000 "Consignment Util"
                                 LRecSL.Validate("Unit of Measure Code", bp."UOM_ST3");
                                 lrecsl.validate(Quantity, bp.Quantity_ST3);
                                 lrecsl.validate("Unit Price", bp.Storage3);
-                                lrecsl.Description := 'Phí lưu kho tủ nhỏ tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + bp."Contract Description";
+                                lrecsl.Description := 'Phí lưu kho tủ nhỏ tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + '-' + bp."Contract Description";
                                 recStore.Reset();
                                 recStore.SetCurrentKey("Location Code");
                                 recStore.SetRange("Location Code", LRecSL."Location Code");
@@ -2206,116 +2205,111 @@ codeunit 70000 "Consignment Util"
                             //     LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
                             // lrecsl.insert(true);
 
-<<<<<<< HEAD
-/*  LRecSL."Line No." := 8000;
-  lrecsl.Type := lrecsl.Type::"G/L Account";
-  lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
-  lrecsl.validate("Location Code", bp."Store No.");
-  LRecSL.Validate("Gen. Bus. Posting Group", LRecVen."Gen. Bus. Posting Group");
-  LRecSL.Validate("VAT Bus. Posting Group", bp."VAT Bus. Posting Group");
-  LRecSL.Validate("VAT Prod. Posting Group", bp."VAT_ST3");
-  LRecSL.Validate("Unit of Measure Code", bp."UOM_ST3");
-  lrecsl.validate(Quantity, bp.Quantity_ST3);
-  lrecsl.validate("Unit Price", bp.Storage3);
-  lrecsl.Description := 'Phí lưu kho tủ nhỏ tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + bp."Contract Description";
-  recStore.Reset();
-  recStore.SetCurrentKey("Location Code");
-  recStore.SetRange("Location Code", LRecSL."Location Code");
-  if recStore.FindFirst() then
-      LRecSL.Validate("Shortcut Dimension 1 Code", recStore."Global Dimension 1 Code")
-  else
-      LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
-  lrecsl.insert(true);
-    */
-=======
-                            if bp.Storage4 <> 0 then begin
->>>>>>> 6603910934ef923605d60e3062afc74f95d1bb42
-LRecSL."Line No." := 9000;
-                                lrecsl.Type := lrecsl.Type::"G/L Account";
-                                lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
-                                lrecsl.validate("Location Code", bp."Store No.");
-                                LRecSL.Validate("Gen. Bus. Posting Group", LRecVen."Gen. Bus. Posting Group");
-                                LRecSL.Validate("VAT Bus. Posting Group", bp."VAT Bus. Posting Group");
-                                LRecSL.Validate("VAT Prod. Posting Group", bp."VAT_ST4");
-                                LRecSL.Validate("Unit of Measure Code", bp."UOM_ST4");
-                                lrecsl.validate(Quantity, bp.Quantity_ST4);
-                                lrecsl.validate("Unit Price", bp.Storage4);
-                                lrecsl.Description := 'Phí lưu kho tủ đông tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + bp."Contract Description";
-                                recStore.Reset();
-                                recStore.SetCurrentKey("Location Code");
-                                recStore.SetRange("Location Code", LRecSL."Location Code");
-                                if recStore.FindFirst() then
-                                    LRecSL.Validate("Shortcut Dimension 1 Code", recStore."Global Dimension 1 Code")
-                                else
-                                    LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
-                                lrecsl.insert(true);
-                            end;
+                            /*  LRecSL."Line No." := 8000;
+                              lrecsl.Type := lrecsl.Type::"G/L Account";
+                              lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
+                              lrecsl.validate("Location Code", bp."Store No.");
+                              LRecSL.Validate("Gen. Bus. Posting Group", LRecVen."Gen. Bus. Posting Group");
+                              LRecSL.Validate("VAT Bus. Posting Group", bp."VAT Bus. Posting Group");
+                              LRecSL.Validate("VAT Prod. Posting Group", bp."VAT_ST3");
+                              LRecSL.Validate("Unit of Measure Code", bp."UOM_ST3");
+                              lrecsl.validate(Quantity, bp.Quantity_ST3);
+                              lrecsl.validate("Unit Price", bp.Storage3);
+                              lrecsl.Description := 'Phí lưu kho tủ nhỏ tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + bp."Contract Description";
+                              recStore.Reset();
+                              recStore.SetCurrentKey("Location Code");
+                              recStore.SetRange("Location Code", LRecSL."Location Code");
+                              if recStore.FindFirst() then
+                                  LRecSL.Validate("Shortcut Dimension 1 Code", recStore."Global Dimension 1 Code")
+                              else
+                                  LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
+                              lrecsl.insert(true);
+                                */
+                            LRecSL."Line No." := 9000;
+                            lrecsl.Type := lrecsl.Type::"G/L Account";
+                            lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
+                            lrecsl.validate("Location Code", bp."Store No.");
+                            LRecSL.Validate("Gen. Bus. Posting Group", LRecVen."Gen. Bus. Posting Group");
+                            LRecSL.Validate("VAT Bus. Posting Group", bp."VAT Bus. Posting Group");
+                            LRecSL.Validate("VAT Prod. Posting Group", bp."VAT_ST4");
+                            LRecSL.Validate("Unit of Measure Code", bp."UOM_ST4");
+                            lrecsl.validate(Quantity, bp.Quantity_ST4);
+                            lrecsl.validate("Unit Price", bp.Storage4);
+                            lrecsl.Description := 'Phí lưu kho tủ đông tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + '-' + bp."Contract Description";
+                            recStore.Reset();
+                            recStore.SetCurrentKey("Location Code");
+                            recStore.SetRange("Location Code", LRecSL."Location Code");
+                            if recStore.FindFirst() then
+                                LRecSL.Validate("Shortcut Dimension 1 Code", recStore."Global Dimension 1 Code")
+                            else
+                                LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
+                            lrecsl.insert(true);
+                        end;
 
-                            if bp.Storage5 <> 0 then begin
-                                LRecSL."Line No." := 10000;
-                                lrecsl.Type := lrecsl.Type::"G/L Account";
-                                lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
-                                lrecsl.validate("Location Code", bp."Store No.");
-                                LRecSL.Validate("Gen. Bus. Posting Group", LRecVen."Gen. Bus. Posting Group");
-                                LRecSL.Validate("VAT Bus. Posting Group", bp."VAT Bus. Posting Group");
-                                LRecSL.Validate("VAT Prod. Posting Group", bp."VAT_ST5");
-                                LRecSL.Validate("Unit of Measure Code", bp."UOM_ST5");
-                                lrecsl.validate(Quantity, bp.Quantity_ST5);
-                                lrecsl.validate("Unit Price", bp.Storage5);
-                                lrecsl.Description := 'Phí lưu kho ... tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + bp."Contract Description";
-                                recStore.Reset();
-                                recStore.SetCurrentKey("Location Code");
-                                recStore.SetRange("Location Code", LRecSL."Location Code");
-                                if recStore.FindFirst() then
-                                    LRecSL.Validate("Shortcut Dimension 1 Code", recStore."Global Dimension 1 Code")
-                                else
-                                    LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
-                                lrecsl.insert(true);
-                            end;
+                        if bp.Storage5 <> 0 then begin
+                            LRecSL."Line No." := 10000;
+                            lrecsl.Type := lrecsl.Type::"G/L Account";
+                            lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
+                            lrecsl.validate("Location Code", bp."Store No.");
+                            LRecSL.Validate("Gen. Bus. Posting Group", LRecVen."Gen. Bus. Posting Group");
+                            LRecSL.Validate("VAT Bus. Posting Group", bp."VAT Bus. Posting Group");
+                            LRecSL.Validate("VAT Prod. Posting Group", bp."VAT_ST5");
+                            LRecSL.Validate("Unit of Measure Code", bp."UOM_ST5");
+                            lrecsl.validate(Quantity, bp.Quantity_ST5);
+                            lrecsl.validate("Unit Price", bp.Storage5);
+                            lrecsl.Description := 'Phí lưu kho ... tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + '-' + bp."Contract Description";
+                            recStore.Reset();
+                            recStore.SetCurrentKey("Location Code");
+                            recStore.SetRange("Location Code", LRecSL."Location Code");
+                            if recStore.FindFirst() then
+                                LRecSL.Validate("Shortcut Dimension 1 Code", recStore."Global Dimension 1 Code")
+                            else
+                                LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
+                            lrecsl.insert(true);
+                        end;
 
-                            if bp.Locker <> 0 then begin
-                                LRecSL."Line No." := 11000;
-                                lrecsl.Type := lrecsl.Type::"G/L Account";
-                                lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
-                                lrecsl.validate("Location Code", bp."Store No.");
-                                LRecSL.Validate("Gen. Bus. Posting Group", LRecVen."Gen. Bus. Posting Group");
-                                LRecSL.Validate("VAT Bus. Posting Group", bp."VAT Bus. Posting Group");
-                                LRecSL.Validate("VAT Prod. Posting Group", bp."VAT_Locker");
-                                LRecSL.Validate("Unit of Measure Code", bp."UOM_Locker");
-                                lrecsl.validate(Quantity, bp.Quantity_Locker);
-                                lrecsl.validate("Unit Price", bp.Locker);
-                                lrecsl.Description := 'Phí tủ khóa nhỏ tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + bp."Contract Description";
-                                recStore.Reset();
-                                recStore.SetCurrentKey("Location Code");
-                                recStore.SetRange("Location Code", LRecSL."Location Code");
-                                if recStore.FindFirst() then
-                                    LRecSL.Validate("Shortcut Dimension 1 Code", recStore."Global Dimension 1 Code")
-                                else
-                                    LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
-                                lrecsl.insert(true);
-                            end;
+                        if bp.Locker <> 0 then begin
+                            LRecSL."Line No." := 11000;
+                            lrecsl.Type := lrecsl.Type::"G/L Account";
+                            lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
+                            lrecsl.validate("Location Code", bp."Store No.");
+                            LRecSL.Validate("Gen. Bus. Posting Group", LRecVen."Gen. Bus. Posting Group");
+                            LRecSL.Validate("VAT Bus. Posting Group", bp."VAT Bus. Posting Group");
+                            LRecSL.Validate("VAT Prod. Posting Group", bp."VAT_Locker");
+                            LRecSL.Validate("Unit of Measure Code", bp."UOM_Locker");
+                            lrecsl.validate(Quantity, bp.Quantity_Locker);
+                            lrecsl.validate("Unit Price", bp.Locker);
+                            lrecsl.Description := 'Phí tủ khóa nhỏ tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + '-' + bp."Contract Description";
+                            recStore.Reset();
+                            recStore.SetCurrentKey("Location Code");
+                            recStore.SetRange("Location Code", LRecSL."Location Code");
+                            if recStore.FindFirst() then
+                                LRecSL.Validate("Shortcut Dimension 1 Code", recStore."Global Dimension 1 Code")
+                            else
+                                LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
+                            lrecsl.insert(true);
+                        end;
 
-                            if bp.Locker1 <> 0 then begin
-                                LRecSL."Line No." := 12000;
-                                lrecsl.Type := lrecsl.Type::"G/L Account";
-                                lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
-                                lrecsl.validate("Location Code", bp."Store No.");
-                                LRecSL.Validate("Gen. Bus. Posting Group", LRecVen."Gen. Bus. Posting Group");
-                                LRecSL.Validate("VAT Bus. Posting Group", bp."VAT Bus. Posting Group");
-                                LRecSL.Validate("VAT Prod. Posting Group", bp."VAT_Locker1");
-                                LRecSL.Validate("Unit of Measure Code", bp."UOM_Locker1");
-                                lrecsl.validate(Quantity, bp.Quantity_Locker1);
-                                lrecsl.validate("Unit Price", bp.Locker1);
-                                lrecsl.Description := 'Phí tủ khóa lớn tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + bp."Contract Description";
-                                recStore.Reset();
-                                recStore.SetCurrentKey("Location Code");
-                                recStore.SetRange("Location Code", LRecSL."Location Code");
-                                if recStore.FindFirst() then
-                                    LRecSL.Validate("Shortcut Dimension 1 Code", recStore."Global Dimension 1 Code")
-                                else
-                                    LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
-                                lrecsl.insert(true);
-                            end;
+                        if bp.Locker1 <> 0 then begin
+                            LRecSL."Line No." := 12000;
+                            lrecsl.Type := lrecsl.Type::"G/L Account";
+                            lrecsl.validate("No.", RetailSetup."Def. Sales Inv. G/L Acc.");
+                            lrecsl.validate("Location Code", bp."Store No.");
+                            LRecSL.Validate("Gen. Bus. Posting Group", LRecVen."Gen. Bus. Posting Group");
+                            LRecSL.Validate("VAT Bus. Posting Group", bp."VAT Bus. Posting Group");
+                            LRecSL.Validate("VAT Prod. Posting Group", bp."VAT_Locker1");
+                            LRecSL.Validate("Unit of Measure Code", bp."UOM_Locker1");
+                            lrecsl.validate(Quantity, bp.Quantity_Locker1);
+                            lrecsl.validate("Unit Price", bp.Locker1);
+                            lrecsl.Description := 'Phí tủ khóa lớn tháng: ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3))) + '-' + bp."Contract Description";
+                            recStore.Reset();
+                            recStore.SetCurrentKey("Location Code");
+                            recStore.SetRange("Location Code", LRecSL."Location Code");
+                            if recStore.FindFirst() then
+                                LRecSL.Validate("Shortcut Dimension 1 Code", recStore."Global Dimension 1 Code")
+                            else
+                                LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
+                            lrecsl.insert(true);
                         end;
 
                     until bp.Next() = 0;
