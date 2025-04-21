@@ -81,6 +81,7 @@ table 70003 "Consignment Entries"
         field(63; "Periodic Discount Amount"; Decimal) { }
         field(64; "Periodic Discount Amount (LCY)"; Decimal) { }
         field(70; "VAT Code"; Code[20]) { }
+        field(50107; "VAT Prod. Posting Group"; Code[20]) { Caption = 'VAT Prod. Posting Group'; }
         field(71; "Return No Sales"; Boolean) { }
         field(72; "Item Description"; Text[100]) { }
         field(73; "Currency Code"; Code[10]) { }

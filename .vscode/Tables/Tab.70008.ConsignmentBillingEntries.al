@@ -127,6 +127,7 @@ table 70008 "Consignment Billing Entries"
         field(23; "Contract ID"; Code[20]) { Caption = 'Contract ID'; }
         field(24; "Billing Period ID"; Code[20]) { Caption = 'Billing Period ID'; }
         field(25; "Expected Gross Profit"; Decimal) { Caption = 'Expected Gross Profit'; }
+        field(26; "VAT Prod. Posting Group"; Code[20]) { Caption = 'VAT Prod. Posting Group'; }
     }
     keys
     {

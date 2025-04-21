@@ -88,31 +88,47 @@ page 70010 "Consignment Billing Entries"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the VAT Code field.';
                 }
-                field("Total Excl Tax"; Rec."Total Excl Tax")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the Total Excl Tax field.';
-                }
-                field("Cost Incl Tax"; Rec."Cost Incl Tax")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the value of the cost incl Tax field.';
-                }
+
                 field("Total Incl Tax"; Rec."Total Incl Tax")
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Total Incl Tax field.';
+                    Caption = 'Sales Incl Tax';
                 }
                 field("Total Tax"; Rec."Total Tax")
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Total Tax field.';
+                    Caption = 'Sales Tax';
                 }
+
+                field("Total Excl Tax"; Rec."Total Excl Tax")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Total Excl Tax field.';
+                    Caption = 'Sales Excl Tax';
+                }
+
                 field(Cost; Rec.Cost)
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Cost field.';
+                    Caption = 'Cost Excl Tax';
                 }
+                field("Cost Vat Tax"; GetCostInclVAT())
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the cost Vat Tax field.';
+                    Caption = 'Cost Vat Tax';
+                }
+                field("Cost Incl Tax"; Rec."Cost Incl Tax")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the cost incl Tax field.';
+                    Caption = 'Cost Incl Tax';
+                }
+
+
                 field(Profit; Rec.Profit)
                 {
                     ApplicationArea = All;
@@ -121,4 +137,9 @@ page 70010 "Consignment Billing Entries"
             }
         }
     }
+    local procedure GetCostInclVAT(): Decimal
+
+    begin
+        exit(Rec."Cost Incl Tax" - Rec.Cost);
+    end;
 }

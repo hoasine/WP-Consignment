@@ -114,7 +114,7 @@ pageextension 58068 "WP Physical Inventory Journal" extends "Phys. Inventory Jou
                         UnitPrice := PriceUtil.GetValidRetailPrice2(LRecIJL."Location Code", LRecIJL."Item No.", LRecIJL."Posting Date", 0T, LRecIJL."Unit of Measure Code",
                         LRecIJL."Variant Code", LRecItem."VAT Bus. Posting Gr. (Price)", '', lrecrs."Default Price Group", '', '');
 
-                        TxtStr := LRecBarc."Barcode No." + ',' + LRecIJL.Description + ',' + FORMAT(UnitPrice) + CRLF;
+                        TxtStr := LRecBarc."Barcode No." + ',' + LRecIJL.Description + ',' + FORMAT(UnitPrice).Replace(',', '') + CRLF;
 
                         OutStr.WriteText(TxtStr);
                     until LRecBarc.next = 0;
