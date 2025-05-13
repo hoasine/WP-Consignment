@@ -633,7 +633,7 @@ codeunit 70000 "Consignment Util"
         ConsignRate.SetRange("Store No.", pPosSales."Store No.");
         if ConsignRate.FindFirst() then begin
             repeat
-                if (ConsignRate."Disc. From" <= pPosSales."Discount %") and (ConsignRate."Disc. To" >= pPosSales."Discount %") then
+                if (ConsignRate."Disc. From" <= ABS(pPosSales."Discount %")) and (ConsignRate."Disc. To" >= ABS(pPosSales."Discount %")) then
                     intConsignRate := ConsignRate."Profit Margin";
             until (ConsignRate.next = 0) or (intConsignRate <> 0);
         end;
@@ -651,7 +651,7 @@ codeunit 70000 "Consignment Util"
             ConsignRate.SetFilter("Store No.", '');
             if ConsignRate.FindFirst() then begin
                 repeat
-                    if (ConsignRate."Disc. From" <= pPosSales."Discount %") and (ConsignRate."Disc. To" >= pPosSales."Discount %") then
+                    if (ConsignRate."Disc. From" <= ABS(pPosSales."Discount %")) and (ConsignRate."Disc. To" >= ABS(pPosSales."Discount %")) then
                         if ConsignRate."Store No." = '' then
                             intConsignRate := ConsignRate."Profit Margin";
                 until (ConsignRate.next = 0) or (intConsignRate <> 0);
@@ -687,7 +687,7 @@ codeunit 70000 "Consignment Util"
         ConsignRate.SetRange("Store No.", pPosSales."Store No.");
         if ConsignRate.FindFirst() then begin
             repeat
-                if (ConsignRate."Disc. From" <= pPosSales."Discount %") and (ConsignRate."Disc. To" >= pPosSales."Discount %") then
+                if (ConsignRate."Disc. From" <= ABS(pPosSales."Discount %")) and (ConsignRate."Disc. To" >= ABS(pPosSales."Discount %")) then
                     intConsignRate := ConsignRate."Profit Margin";
             until (ConsignRate.next = 0) or (intConsignRate <> 0);
         end;
@@ -704,7 +704,7 @@ codeunit 70000 "Consignment Util"
             ConsignRate.SetFilter("Store No.", '');
             if ConsignRate.FindFirst() then begin
                 repeat
-                    if (ConsignRate."Disc. From" <= pPosSales."Discount %") and (ConsignRate."Disc. To" >= pPosSales."Discount %") then
+                    if (ConsignRate."Disc. From" <= ABS(pPosSales."Discount %")) and (ConsignRate."Disc. To" >= ABS(pPosSales."Discount %")) then
                         if ConsignRate."Store No." = '' then
                             intConsignRate := ConsignRate."Profit Margin";
                 until (ConsignRate.next = 0) or (intConsignRate <> 0);
