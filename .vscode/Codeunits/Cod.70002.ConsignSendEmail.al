@@ -34,19 +34,11 @@ codeunit 70002 ConsignSendEmails
     var
         cuConsignmentUtil: Codeunit "Consignment Util";
         bp: Record "WP Counter Area";
-        ConsignmentBillingPeriod: Record "WP B.Inc Billing Periods";
+       
     begin
-        ConsignmentBillingPeriod.Reset();
-        //ConsignmentBillingPeriod.SetCurrentKey("Batch is done", "Confirm Email");
-        ConsignmentBillingPeriod.SetRange("Batch is Mng Fee", false);
-        if ConsignmentBillingPeriod.FindFirst() then begin
-            repeat
-                ConsignmentBillingPeriod."Batch Is Mng Fee" := true;
-                ConsignmentBillingPeriod."Batch Timestamp" := CurrentDateTime;
-                ConsignmentBillingPeriod.modify(true);
-            until ConsignmentBillingPeriod.Next() = 0;
+           
             cuConsignmentUtil.CreateSIManagementFee(bp);
-        end;
+       
 
 
     end;
