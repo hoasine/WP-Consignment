@@ -1448,24 +1448,25 @@ codeunit 70000 "Consignment Util"
                         clear(POSVAT);
                         POSVAT.reset;
                         IF POSVAT.Get(SalesEntry."VAT Code") then;
-                        IF (SalesEntry."wp Staff Card No." <> '') OR (SalesEntry."wp Member Card No." <> '') then begin
-                            SalesEntry."Discount Amount" := SalesEntry."Discount Amount" - (SalesEntry."wp Member Disc. Amount" + SalesEntry."wp Staff Disc. Amount");
-                            SalesEntry."Discount %" := ROUND((SalesEntry."Discount Amount" / SalesEntry.Price * 100), 1);
-                            IF SalesEntry."Total Rounded Amt." < 0 then begin
-                                SalesEntry."Total Rounded Amt." := SalesEntry."Total Rounded Amt." - (SalesEntry."wp Member Disc. Amount" + SalesEntry."wp Staff Disc. Amount");
-                                SalesEntry."Net Amount" := ROUND((SalesEntry."Total Rounded Amt.") / (1 + POSVAT."VAT %" / 100), 1);
-                                SalesEntry."VAT Amount" := SalesEntry."Total Rounded Amt." - SalesEntry."Net Amount";
+                        /*  IF (SalesEntry."wp Member Disc. %" <> 0) OR (SalesEntry."wp Staff Disc. %" <> 0) then begin
+                              SalesEntry."Discount Amount" := SalesEntry."Discount Amount" - (SalesEntry."wp Member Disc. Amount" + SalesEntry."wp Staff Disc. Amount");
+                              SalesEntry."Discount %" := ROUND((SalesEntry."Discount Amount" / SalesEntry.Price * 100), 1);
+                              IF SalesEntry."Total Rounded Amt." < 0 then begin
+                                  SalesEntry."Total Rounded Amt." := SalesEntry."Total Rounded Amt." - (SalesEntry."wp Member Disc. Amount" + SalesEntry."wp Staff Disc. Amount");
+                                  SalesEntry."Net Amount" := ROUND((SalesEntry."Total Rounded Amt.") / (1 + POSVAT."VAT %" / 100), 1);
+                                  SalesEntry."VAT Amount" := SalesEntry."Total Rounded Amt." - SalesEntry."Net Amount";
 
-                            end else begin
-                                SalesEntry."Total Rounded Amt." := SalesEntry."Total Rounded Amt." - (SalesEntry."wp Member Disc. Amount" + SalesEntry."wp Staff Disc. Amount");
-                                SalesEntry."Net Amount" := ROUND((SalesEntry."Total Rounded Amt.") / (1 + POSVAT."VAT %" / 100), 1);
-                                SalesEntry."VAT Amount" := SalesEntry."Total Rounded Amt." - SalesEntry."Net Amount";
-                            end;
+                              end else begin
+                                  SalesEntry."Total Rounded Amt." := SalesEntry."Total Rounded Amt." - (SalesEntry."wp Member Disc. Amount" + SalesEntry."wp Staff Disc. Amount");
+                                  SalesEntry."Net Amount" := ROUND((SalesEntry."Total Rounded Amt.") / (1 + POSVAT."VAT %" / 100), 1);
+                                  SalesEntry."VAT Amount" := SalesEntry."Total Rounded Amt." - SalesEntry."Net Amount";
+                              end;
 
 
-                        end;
+                          end;*/
                         //ConsignRate.SetRange("Consignment Type", pPosSales."Consignment Type");
                         ConsignRate.SetRange("Store No.", SalesEntry."Store No.");
+                        SalesEntry."Discount %" := ROUND((SalesEntry."Discount Amount" / SalesEntry.Price * 100), 1);
                         if ConsignRate.FindFirst() then begin
                             repeat
                                 DiscPercSaleEntry := 0;
@@ -3004,9 +3005,15 @@ codeunit 70000 "Consignment Util"
                     end;
 
                     TotalPayment := lrecth.Payment;
-                    MDRWeight := TenderAmount / TotalPayment;
-                    //MDRAmt := (tse."Net Amount" * MDRRate) * MDRWeight; UAT-0025: Remove  Net Amount
-                    MDRAmt := (tse."Total Rounded Amt." * MDRRate) * MDRWeight; //UAT-0025: Change netamt to gross amt
+                    IF TotalPayment <> 0 then begin
+                        MDRWeight := TenderAmount / TotalPayment;
+                        MDRAmt := (tse."Total Rounded Amt." * MDRRate) * MDRWeight;
+                    end
+                    else begin
+                        MDRWeight := 0;
+                        //MDRAmt := (tse."Net Amount" * MDRRate) * MDRWeight; UAT-0025: Remove  Net Amount
+                        MDRAmt := tse."Total Rounded Amt." * MDRRate; //UAT-0025: Change netamt to gross amt
+                    end;
                 end;
             end;
         end;
