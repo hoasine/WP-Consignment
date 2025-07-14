@@ -36,11 +36,7 @@ codeunit 70002 ConsignSendEmails
         bp: Record "WP Counter Area";
        
     begin
-           
             cuConsignmentUtil.CreateSIManagementFee(bp);
-       
-
-
     end;
 
 

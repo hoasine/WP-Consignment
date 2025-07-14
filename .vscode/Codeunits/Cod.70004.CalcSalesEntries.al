@@ -15,7 +15,8 @@ codeunit 70004 "Calculate Sales Entries"
     trigger OnRun()
     begin
         ClearLastError();
-        CalculateSalesEntries();
+        // CalculateSalesEntries();
+        NewCalculateSalesEntries
     end;
 
     local procedure CalculateSalesEntries()
@@ -54,6 +55,453 @@ codeunit 70004 "Calculate Sales Entries"
                 Commit();
             end;
         end;
+    end;
+
+    procedure NewCalculateSalesEntries()
+    var
+        dtAssignMonth: Date;
+        dtAssignMonthEnd: Date;
+    begin
+        RetailSetup.Get();
+        intdateFormula := RetailSetup."Consign. Calc. Days/Months";
+        intdateFormula := 1;
+        // dtassignDate := Today;
+        dtassignDate := Today;
+
+        if RetailSetup."Consignment Calc. Cycle" = RetailSetup."Consignment Calc. Cycle"::Daily then begin
+            for i := 1 to intdateFormula do begin
+                txtDateFormula := '-' + Format(i) + 'D';
+                salesDate := CalcDate(txtDateFormula, dtassignDate);
+                CopySalesData2(salesDate, salesDate, RetailSetup."Consignment Calc. Cycle");
+                //MoveConsignmentRateBlank(Format(salesDate, 0, '<Year4><Month,2><Day,2>'));
+                //Commit();
+            end;
+        end;
+
+    end;
+
+    procedure CopySalesData2(pSalesDate: Date; pSalesDateEnd: Date; pCycle: Enum "Consignment Calc. Cycle")
+    var
+        TransHeader: Record "LSC Transaction Header";
+        SalesEntry: Record "LSC Trans. Sales Entry";
+        ConsignHdr: Record "Daily Consignment Checklist";
+        POSSales: Record "Daily Consign. Sales Details";
+        Missingsales: Record "Daily Consign. Sales Missing";
+        recItem: Record item;
+        ItemSpecialGrp: Record "LSC Item/Special Group Link";
+        Barc: Record "LSC barcodes";
+        ValueEntry: Record "Value Entry";
+        CurrExcRate: Record "Currency Exchange Rate";
+        discPerc: Decimal;
+        ckDiscount: Decimal;
+        ValueEntryQty: Decimal;
+        CostAmountActual: Decimal;
+        CostPerUnit: Decimal;
+        ConsignGroup: text[250];//20200923
+        StoreVendor: code[20];//20201002
+        POSVAT: Record "LSC POS VAT Code";
+        i: Integer; //20210705
+        gdiag: Dialog; //20210705
+        //recCS: record "Consignment Setup";
+        TransDiscEntry: Record "LSC Trans. Discount Entry";
+        NextLineNo: Integer;
+        ConsignRate: Record "WP Consignment Margin Setup";
+        MGPSetup: Record "WP MPG Setup";
+        ConsigPerc: Decimal;
+        DiscPercSaleEntry: Decimal;
+        AllowanceDiscAmt: Decimal;
+        NetAllowanceAmt: decimal;
+        VatAllowanceAmt: decimal;
+        AllowanceDiscPerc: Decimal;
+        docNo: Code[20];
+        Item: Record item;
+    begin
+        if pCycle = pCycle::Daily then
+            docNo := Format(pSalesDate, 0, '<Year4><Month,2><Day,2>')
+        else
+            docNo := Format(pSalesDate, 0, '<Year4><Month,2>');
+        //Get all vendor setup for specific time range
+        POSSales.Reset();
+        POSSales.SetFilter("Document No.", docNo);
+        if not POSSales.IsEmpty then
+            POSSales.DeleteAll();
+        Missingsales.Reset();
+        Missingsales.SetFilter("Document No.", docNo);
+        if not Missingsales.IsEmpty then
+            Missingsales.DeleteAll();
+        ConsignHdr.Reset();
+        ConsignHdr.SetRange("Document No.", docNo);
+        if not ConsignHdr.FindFirst() then begin
+            ConsignHdr."Document No." := docNo;
+            ConsignHdr.Insert(true);
+        end else
+            ConsignHdr.Modify(true);
+
+        i := 0;
+        nextLineNo := 100;
+
+        TransHeader.Reset();
+        TransHeader.SetCurrentKey("Store No.", Date);
+        TransHeader.SetRange(Date, pSalesDate, pSalesDateEnd);
+        TransHeader.SetFilter("Entry Status", '0|2');
+        TransHeader.SetRange("Transaction Type", TransHeader."Transaction Type"::Sales);
+        TransHeader.SetLoadFields(Date, "Transaction Type", "Entry Status", "Member Card No.", "Trans. Currency", "Posted Statement No.");
+        if TransHeader.FindSet() then begin
+            if GuiAllowed then begin
+                gdiag.Open('Processing Transaction..\Records:#1########## of #2##########\Date: #3##########');
+                gdiag.update(2, format(TransHeader.Count));
+                if pSalesDateEnd <> pSalesDate then
+                    gdiag.Update(3, StrSubstNo('%1..%2', pSalesDate, pSalesDateEnd))
+                else
+                    gdiag.Update(3, pSalesDate);
+            end;
+            repeat
+                i += 1;
+                if GuiAllowed then gdiag.update(1, format(i));
+                SalesEntry.Reset();
+                SalesEntry.SetCurrentKey("Store No.", "POS Terminal No.", "Transaction No.", Date, "Gen. Prod. Posting Group");
+                SalesEntry.SetRange("Store No.", TransHeader."Store No.");
+                SalesEntry.SetRange("POS Terminal No.", TransHeader."POS Terminal No.");
+                SalesEntry.SetRange("Transaction No.", TransHeader."Transaction No.");
+                SalesEntry.SetRange(Date, pSalesDate, pSalesDateEnd);
+                ConsignGroup := NewGetConsignPostGroup();
+                if ConsignGroup <> '' then SalesEntry.SetFilter("Gen. Prod. Posting Group", ConsignGroup);
+                if SalesEntry.FindSet() then begin
+
+                    repeat
+                        Item.Reset();
+                        Item.SetLoadFields("LSC Item Family Code", "LSC Division Code", Description, "Vendor No.");
+                        if Item.Get(SalesEntry."Item No.") then;
+                        //withStoreCode
+                        ConsignRate.Reset();
+                        ConsignRate.SetRange("Vendor No.", Item."Vendor No.");
+                        ConsignRate.SetRange("Item No.", SalesEntry."Item No.");
+                        clear(POSVAT);
+                        POSVAT.reset;
+                        IF POSVAT.Get(SalesEntry."VAT Code") then;
+                        /*  IF (SalesEntry."wp Member Disc. %" <> 0) OR (SalesEntry."wp Staff Disc. %" <> 0) then begin
+                              SalesEntry."Discount Amount" := SalesEntry."Discount Amount" - (SalesEntry."wp Member Disc. Amount" + SalesEntry."wp Staff Disc. Amount");
+                              SalesEntry."Discount %" := ROUND((SalesEntry."Discount Amount" / SalesEntry.Price * 100), 1);
+                              IF SalesEntry."Total Rounded Amt." < 0 then begin
+                                  SalesEntry."Total Rounded Amt." := SalesEntry."Total Rounded Amt." - (SalesEntry."wp Member Disc. Amount" + SalesEntry."wp Staff Disc. Amount");
+                                  SalesEntry."Net Amount" := ROUND((SalesEntry."Total Rounded Amt.") / (1 + POSVAT."VAT %" / 100), 1);
+                                  SalesEntry."VAT Amount" := SalesEntry."Total Rounded Amt." - SalesEntry."Net Amount";
+
+                              end else begin
+                                  SalesEntry."Total Rounded Amt." := SalesEntry."Total Rounded Amt." - (SalesEntry."wp Member Disc. Amount" + SalesEntry."wp Staff Disc. Amount");
+                                  SalesEntry."Net Amount" := ROUND((SalesEntry."Total Rounded Amt.") / (1 + POSVAT."VAT %" / 100), 1);
+                                  SalesEntry."VAT Amount" := SalesEntry."Total Rounded Amt." - SalesEntry."Net Amount";
+                              end;
+
+
+                          end;*/
+                        //ConsignRate.SetRange("Consignment Type", pPosSales."Consignment Type");
+                        ConsignRate.SetRange("Store No.", SalesEntry."Store No.");
+                        SalesEntry."Discount %" := ROUND((SalesEntry."Discount Amount" / SalesEntry.Price * 100), 1);
+                        if ConsignRate.FindFirst() then begin
+                            repeat
+                                DiscPercSaleEntry := 0;
+                                DiscPercSaleEntry := SalesEntry."Discount %";//Exclude allowance
+                                if (ABS(DiscPercSaleEntry) >= ConsignRate."Disc. From") and (ABS(DiscPercSaleEntry) <= ConsignRate."Disc. To") then begin
+
+                                    Clear(POSSales);
+                                    POSSales.Reset();
+                                    POSSales.Init();
+                                    POSSales."Document No." := DocNo;
+                                    POSSales."Line No." := NextLineNo;
+                                    POSSales."Transaction No." := SalesEntry."Transaction No.";
+                                    POSSales."Sales Entry Line No." := SalesEntry."Line No.";
+                                    POSSales."Receipt No." := SalesEntry."Receipt No.";
+                                    POSSales."POS Terminal No." := SalesEntry."POS Terminal No.";
+                                    POSSales.validate("Item No.", SalesEntry."Item No.");
+                                    POSSales.Date := SalesEntry.Date;
+                                    POSSales."Store No." := SalesEntry."Store No.";
+                                    POSSales."Vendor No." := Item."Vendor No.";
+                                    POSSales."Item Family Code" := recitem."LSC Item Family Code";
+                                    POSSales.Division := Item."LSC Division Code";
+                                    POSSales."Item Category" := SalesEntry."Item Category Code";
+                                    POSSales."Product Group" := SalesEntry."Retail Product Code";
+                                    POSSales."Item Description" := recItem.Description;
+                                    POSSales."Product Group Description" := getProductGroupDesc(recitem."No.");
+
+                                    Clear(ItemSpecialGrp);
+                                    ItemSpecialGrp.Reset();
+                                    ItemSpecialGrp.SetRange("Item No.", SalesEntry."Item No.");
+                                    if ItemSpecialGrp.FindFirst() then begin
+                                        repeat
+                                            if CopyStr(ItemSpecialGrp."Special Group Code", 1, 1) = 'B' then
+                                                POSSales."Special Group" := ItemSpecialGrp."Special Group Code";
+
+                                            if CopyStr(ItemSpecialGrp."Special Group Code", 1, 1) = 'C' then
+                                                POSSales."Special Group 2" := ItemSpecialGrp."Special Group Code"
+                                            else
+                                                //Peter modified this to get special group without B and C
+                                                POSSales."Special Group" := ItemSpecialGrp."Special Group Code"
+
+                                        until ItemSpecialGrp.Next() = 0;
+
+                                    end;
+                                    if SalesEntry."Barcode No." <> '' then
+                                        POSSales."Barcode No." := SalesEntry."Barcode No."
+                                    else begin
+                                        Clear(Barc);
+                                        Barc.Reset();
+                                        Barc.SetRange("Item No.", SalesEntry."Item No.");
+                                        Barc.SetRange("Unit of Measure Code", SalesEntry."Unit of Measure");
+                                        if Barc.FindFirst() then
+                                            POSSales."Barcode No." := Barc."Barcode No.";
+                                    end;
+
+                                    clear(POSVAT);
+                                    POSVAT.reset;
+                                    if POSVAT.Get(SalesEntry."VAT Code") then;
+
+                                    POSSales.Quantity := -SalesEntry.Quantity;
+                                    POSSales.Price := SalesEntry.Price;
+                                    POSSales.UOM := SalesEntry."Unit of Measure";
+                                    POSSales."Net Amount" := -SalesEntry."Net Amount"; //Exclude allowance
+                                    POSSales."VAT Amount" := -SalesEntry."VAT Amount"; //Exclude allowance
+
+                                    //UAT-025: Fix Tax Rate always is 0 
+                                    POSSales."Tax Rate" := POSVAT."VAT %";
+                                    POSSales."VAT Prod. Posting Group" := SalesEntry."VAT Prod. Posting Group";
+                                    //end UAT-025
+                                    //POSSales."Discount Amount" := ((100 - posvat."VAT %") / 100) * SalesEntry."Discount Amount";
+                                    POSSales."Discount Amount" := SalesEntry."Discount Amount" / ((100 + POSVAT."VAT %") / 100); //Exclude allowance
+                                    POSSales."Promotion No." := SalesEntry."Promotion No.";
+                                    POSSales."Periodic Disc. Type" := SalesEntry."Periodic Disc. Type";
+                                    POSSales."Periodic Offer No." := SalesEntry."Periodic Disc. Group";
+
+                                    TransDiscEntry.Reset();
+                                    TransDiscEntry.SetRange("Receipt No.", SalesEntry."Receipt No.");
+                                    TransDiscEntry.SetRange("Transaction No.", SalesEntry."Transaction No.");
+                                    TransDiscEntry.SetRange("Store No.", SalesEntry."Store No.");
+                                    TransDiscEntry.SetRange("Line No.", SalesEntry."Line No.");
+                                    if TransDiscEntry.FindFirst() then begin
+                                        repeat
+                                            if (TransDiscEntry."Offer Type" = TransDiscEntry."Offer Type"::"Line Discount") then begin
+                                                POSSales."Periodic Disc. Type" := POSSales."Periodic Disc. Type"::"Line Disc.";
+                                                POSSales."Periodic Offer No." := TransDiscEntry."Offer No.";
+                                            end;
+                                            if (TransDiscEntry."Offer Type" = TransDiscEntry."Offer Type"::"Total Discount") then begin
+                                                POSSales."Total Discount" := TransDiscEntry."Offer No.";
+                                            end;
+                                        until TransDiscEntry.Next() = 0;
+                                    end;
+
+                                    POSSales."Periodic Discount Amount" := SalesEntry."Periodic Discount";
+                                    POSSales."VAT Code" := SalesEntry."VAT Code";
+                                    POSSales."Return No Sales" := SalesEntry."Return No Sale";
+                                    POSSales."Cost Amount" := -SalesEntry."Cost Amount";
+                                    POSSales."USER SID" := USERSECURITYID;
+                                    POSSales."Session ID" := SESSIONID;
+                                    POSSales."Created By" := USERID;
+                                    POSSales."Created Date" := CURRENTDATETIME;
+                                    POSSales."Discount %" := SalesEntry."Discount %"; //Exclude allowance
+                                                                                      //CalcConsignment(POSSales."Vendor No.", POSSales.Date, POSSales, POSSales."Consignment Type");
+                                    POSSales."Profit %" := ConsignRate."Profit Margin";
+                                    POSSales."Consignment %" := NewCalcConsignPerc(POSSales);
+                                    IF POSSales."Consignment %" <> 0 THEN
+                                        POSSales."Consignment Amount" := ROUND(POSSales."Net Amount" * (POSSales."Consignment %" / 100)) //Profit Amount
+                                    ELSE
+                                        POSSales."Consignment Amount" := 0;
+
+                                    POSSales."Member Card No." := TransHeader."Member Card No.";
+                                    POSSales."Currency Code" := TransHeader."Trans. Currency";
+
+                                    IF POSSales."Currency Code" <> '' THEN BEGIN
+                                        Clear(CurrExcRate);
+                                        CurrExcRate.Reset();
+                                        CurrExcRate.SetRange("Currency Code", POSSales."Currency Code");
+                                        CurrExcRate.SetFilter("Starting Date", '<=%1', POSSales.Date);
+                                        if CurrExcRate.FindFirst() then
+                                            POSSales."Exch. Rate" := CurrExcRate."Relational Exch. Rate Amount";
+                                    end;
+                                    if POSSales."Exch. Rate" <> 0 then begin
+                                        POSSales."Net Amount (LCY)" := ROUND(POSSales."Net Amount" * POSSales."Exch. Rate", 1, '=');
+                                        POSSales."VAT Amount (LCY)" := ROUND(POSSales."VAT Amount" * POSSales."Exch. Rate", 1, '=');
+                                        POSSales."Discount Amount (LCY)" := Round(POSSales."Discount Amount (LCY)" * POSSales."Exch. Rate", 1, '=');
+                                        POSSales."Periodic Discount Amount (LCY)" := ROUND(POSSales."Periodic Discount Amount" * POSSales."Exch. Rate", 1, '=');
+                                        POSSales."Cost Amount (LCY)" := POSSales."Cost Amount";
+                                        POSSales."Consignment Amount (LCY)" := ROUND(POSSales."Consignment Amount" * POSSales."Exch. Rate", 1, '=');
+                                    end else begin
+                                        POSSales."Net Amount (LCY)" := POSSales."Net Amount";
+                                        POSSales."VAT Amount (LCY)" := POSSales."VAT Amount";
+                                        POSSales."Discount Amount (LCY)" := POSSales."Discount Amount";
+                                        POSSales."Periodic Discount Amount (LCY)" := POSSales."Periodic Discount Amount";
+                                        POSSales."Cost Amount (LCY)" := POSSales."Cost Amount";
+                                        POSSales."Consignment Amount (LCY)" := POSSales."Consignment Amount";
+                                    end;
+
+                                    POSSales."Gross Price" := SalesEntry."Net Price"; //Exclude allowance
+                                    if POSSales.Quantity <> 0 then begin
+                                        POSSales."Disc. Amount From Std. Price" := round(POSSales."Discount Amount" / POSSales.Quantity); //20210104 //Exclude allowance
+                                                                                                                                          //POSSales."Net Price Incl Tax" := SalesEntry.Price - SalesEntry."Discount Amount" / POSSales.Quantity; //20210104
+                                        POSSales."Net Price Incl Tax" := -(SalesEntry."Net Amount" + SalesEntry."VAT Amount") / POSSales.Quantity; //Exclude allowance
+                                    end;
+
+                                    if (SalesEntry."VAT Amount" <> 0) and (SalesEntry.Quantity <> 0) then
+                                        POSSales."VAT per unit" := -(SalesEntry."VAT Amount" / SalesEntry.Quantity);
+
+                                    //POSSales."Total Incl Tax" := -(POSSales."Net Price Incl Tax" * SalesEntry.Quantity);
+                                    POSSales."Total Incl Tax" := -(POSSales."Net Price Incl Tax" * SalesEntry.Quantity); //Exclude allowance
+                                    possales."Total Excl Tax" := -SalesEntry."Net Amount"; //UAT-025 :No8.RGV_Payment Notice //Exclude allowance
+
+                                    if (SalesEntry."VAT Amount" <> 0) and (SalesEntry.Quantity <> 0) then
+                                        POSSales.Tax := -(SalesEntry."VAT Amount" / SalesEntry.Quantity);
+
+                                    POSSales."Total Tax Collected" := SalesEntry."VAT Amount";
+                                    if POSSales.Quantity <> 0 then
+                                        POSSales."Net Price Excl Tax" := POSSales."Total Excl Tax" / POSSales.Quantity; //20201224
+
+                                    POSSales.Cost := POSSales."Net Amount" - POSSales."Consignment Amount"; ///Consign Cost
+                                    POSSales."Cost Incl Tax" := POSSales.Cost + ((POSSales.Cost * POSVAT."VAT %") / 100); //UAT-025:Cost Inc Tax :=No9+No.11
+                                    getNewMDR(SalesEntry, possales."MDR Rate", possales."MDR Weight", possales."MDR Amount");
+                                    POSSales."MDR Rate Pctg" := possales."MDR Rate" * 100;
+                                    POSSales.insert;
+                                    nextlineno += 100;
+
+                                End;
+                            until (ConsignRate.next = 0);
+                        end;
+
+                    until SalesEntry.Next() = 0;
+                end;
+            until TransHeader.Next() = 0;
+            if GuiAllowed then gdiag.Close();
+        end;
+
+    end;
+
+    procedure NewGetConsignPostGroup(): text[250]
+    begin
+        if RetailSetup.Get() then
+            exit(RetailSetup."Consign. Prod. Posting Groups");
+    end;
+
+    procedure getNewMDR(TSE: record "LSC Trans. Sales Entry"; var MDRRate: Decimal; var MDRWeight: Decimal; var MDRAmt: Decimal)
+    var
+        LRecTPE: Record "LSC Trans. Payment Entry";
+        LRecTTS: Record "LSC Tender Type Setup";
+        LRecTH: Record "LSC Transaction Header";
+        TotalPayment: decimal;
+        TenderAmount: decimal;
+    begin
+        clear(MDRRate);
+        clear(MDRWeight);
+        clear(MDRAmt);
+        clear(LRecTPE);
+        //key(Key1; "Store No.", "POS Terminal No.", "Transaction No.", "Line No.")
+        LRecTPE.setrange("Store No.", TSE."Store No.");
+        LRecTPE.setrange("POS Terminal No.", TSE."POS Terminal No.");
+        LRecTPE.setrange("Transaction No.", TSE."Transaction No.");
+        if lrectpe.FindFirst() then begin
+            repeat
+                clear(LRecTTS);
+                LRecTTS.setrange(lrectts.Code, lrectpe."Tender Type");
+                if LRecTTS.FindFirst() then begin
+                    if lrectts."Integration MDR Rate" <> 0 then begin
+                        MDRRate := LRecTTS."Integration MDR Rate";
+                        TenderAmount += lrectpe."Amount Tendered";
+                    end;
+                end;
+            until lrectpe.next = 0;
+            if MDRRate <> 0 then begin
+                clear(LRecTH);
+                LRecTH.setrange("Store No.", tse."Store No.");
+                lrecth.setrange("POS Terminal No.", tse."POS Terminal No.");
+                LRecTH.setrange("Transaction No.", tse."Transaction No.");
+                if lrecth.FindFirst() then begin
+                    IF (tse."wp Member Disc. Amount" <> 0) OR (tse."wp Staff Disc. Amount" <> 0) then begin
+                        tse."Total Rounded Amt." := tse."Total Rounded Amt." - (tse."wp Member Disc. Amount" + tse."wp Staff Disc. Amount")
+                    end;
+
+                    TotalPayment := lrecth.Payment;
+                    IF TotalPayment <> 0 then begin
+                        MDRWeight := TenderAmount / TotalPayment;
+                        MDRAmt := (tse."Total Rounded Amt." * MDRRate) * MDRWeight;
+                    end
+                    else begin
+                        MDRWeight := 0;
+                        //MDRAmt := (tse."Net Amount" * MDRRate) * MDRWeight; UAT-0025: Remove  Net Amount
+                        MDRAmt := tse."Total Rounded Amt." * MDRRate; //UAT-0025: Change netamt to gross amt
+                    end;
+                end;
+            end;
+        end;
+
+    end;
+
+    procedure getProductGroupDesc(itemNo: code[20]): text[50]
+    var
+        RetailProductGroup: Record "LSC Retail Product Group";
+        Item: Record item;
+    begin
+        Item.Reset();
+        Item.SetLoadFields("LSC Retail Product Code");
+        if Item.Get(itemNo) then;
+
+        RetailProductGroup.Reset();
+        RetailProductGroup.SetRange("Item Category Code", item."Item Category Code");
+        RetailProductGroup.SetRange(Code, item."LSC Retail Product Code");
+        RetailProductGroup.SetLoadFields(Description);
+        if RetailProductGroup.FindFirst() then
+            exit(RetailProductGroup.Description)
+        else
+            exit(Item."LSC Retail Product Code");
+    end;
+
+    local procedure NewCalcConsignPerc(pPosSales: Record "Daily Consign. Sales Details"): Decimal
+    var
+        ConsignRate: Record "WP Consignment Margin Setup";
+        //recRate: Record "Consignment Rate";
+        intConsignRate: Decimal;
+    begin
+        Clear(intConsignRate);
+        //withStoreCode
+        ConsignRate.Reset();
+        ConsignRate.SetRange("Vendor No.", pPosSales."Vendor No.");
+        ConsignRate.SetFilter("Start Date", '<=%1', pPosSales.Date);
+        ConsignRate.SetFilter("End Date", '>=%1', pPosSales.Date);
+        ConsignRate.SetRange("Item No.", pPosSales."Item No.");
+        //ConsignRate.SetRange("Consignment Type", pPosSales."Consignment Type");
+        ConsignRate.SetRange("Store No.", pPosSales."Store No.");
+        if ConsignRate.FindFirst() then begin
+            repeat
+                if (ConsignRate."Disc. From" <= ABS(pPosSales."Discount %")) and (ConsignRate."Disc. To" >= ABS(pPosSales."Discount %")) then
+                    intConsignRate := ConsignRate."Profit Margin";
+            until (ConsignRate.next = 0) or (intConsignRate <> 0);
+        end;
+
+
+        //WithoutStoreCode
+        if intConsignRate = 0 then begin
+            ConsignRate.Reset();
+            ConsignRate.SetRange("Vendor No.", pPosSales."Vendor No.");
+            ConsignRate.SetFilter("Start Date", '<=%1', pPosSales.Date);
+            ConsignRate.SetFilter("End Date", '>=%1', pPosSales.Date);
+            ConsignRate.setrange("Item No.", pPosSales."Item No.");
+            //ConsignRate.SetRange("Consignment Type", pPosSales."Consignment Type");
+            ConsignRate.SetFilter("Store No.", '');
+            if ConsignRate.FindFirst() then begin
+                repeat
+                    if (ConsignRate."Disc. From" <= ABS(pPosSales."Discount %")) and (ConsignRate."Disc. To" >= ABS(pPosSales."Discount %")) then
+                        if ConsignRate."Store No." = '' then
+                            intConsignRate := ConsignRate."Profit Margin";
+                until (ConsignRate.next = 0) or (intConsignRate <> 0);
+            end;
+        end;
+        exit(intConsignRate);
+
+        // recRate.Reset();
+        // recRate.SetRange("Vendor No.", pPosSales."Vendor No.");
+        // recRate.SetRange("Starting Date", 0D, pPosSales.Date);
+        // recRate.SetFilter("Ending Date", '>=%1|%2', pPosSales.Date, 0D);
+        // recRate.SetRange("Consignment Type", pPosSales."Consignment Type");
+        // recRate.SetRange("Store No.", pPosSales."Store No.");
+        // if recRate.FindLast() then
+        //     exit(recRate."Consignment %");
+
     end;
 
     procedure CopySalesData(pSalesDate: Date; pSalesDateEnd: Date; pCycle: Enum "Consignment Calc. Cycle")

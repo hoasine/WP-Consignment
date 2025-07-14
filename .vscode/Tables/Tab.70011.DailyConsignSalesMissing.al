@@ -119,6 +119,13 @@ table 70011 "Daily Consign. Sales Missing"
             FieldClass = FlowField;
             calcformula = lookup("LSC Periodic Discount"."Description" where("No." = field("Total Discount")));
         }
+        field(50005; "POS Terminal No."; Code[10]) { }
+        field(50006; "Tax Rate"; Decimal) { }
+        field(50007; "VAT Prod. Posting Group"; Code[20]) { }
+        field(50008; "Discount %"; Decimal) { }
+        field(50009; "Cost Incl Tax"; Decimal) { }
+        field(50010; "MDR Rate Pctg"; Decimal) { DecimalPlaces = 0 : 3; }
+        field(50011; "Profit %"; Decimal) { DecimalPlaces = 0 : 3; }
     }
     keys
     {

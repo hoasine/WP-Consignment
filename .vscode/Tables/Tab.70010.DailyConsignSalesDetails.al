@@ -119,9 +119,17 @@ table 70010 "Daily Consign. Sales Details"
             FieldClass = FlowField;
             calcformula = lookup("LSC Periodic Discount"."Description" where("No." = field("Total Discount")));
         }
+
         field(50100; "MDR Rate"; Decimal) { DecimalPlaces = 0 : 3; }
         field(50101; "MDR Weight"; Decimal) { DecimalPlaces = 0 : 3; }
         field(50102; "MDR Amount"; Decimal) { }
+        field(50103; "POS Terminal No."; Code[10]) { }
+        field(50104; "Tax Rate"; Decimal) { }
+        field(50105; "VAT Prod. Posting Group"; Code[20]) { }
+        field(50106; "Discount %"; Decimal) { }
+        field(50107; "Cost Incl Tax"; Decimal) { }
+        field(50108; "MDR Rate Pctg"; Decimal) { DecimalPlaces = 0 : 3; }
+        field(50109; "Profit %"; Decimal) { DecimalPlaces = 0 : 3; }
     }
     keys
     {
