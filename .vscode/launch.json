@@ -3,14 +3,12 @@
     "configurations": [
         {
             "name": "http://localhost",          
-        //    "server": "http://192.168.80.59:8080/BC240/",
-           "server": "http://192.168.80.54:8080/TKV/",
-            "serverInstance": "TKV",
+           "server": "http://192.168.80.59:8080/BC240/",
+            "serverInstance": "BC240",
             "type": "al",
             "environmentType": "OnPrem",
             "request": "launch",
-            // "port": 7149,
-           "port": 7086,
+            "port": 7149,
             "authentication": "UserPassword",
             "startupObjectId": 22,
             "startupObjectType": "Page",
@@ -22,3 +20,30 @@
         }
     ]
 }
+
+
+// {
+//      "version": "0.2.0",
+//     "configurations": [
+//         {
+//             "name": "http://localhost",
+//             "request": "launch",
+//             "type": "al",
+//             "environmentType": "OnPrem",
+//             "server": "http://192.168.80.54:8080/TKV/",
+//             "serverInstance": "TKV",
+//             "port": 7086,
+//             "authentication": "UserPassword",
+//             "startupObjectId": 50150,
+//             "startupObjectType": "Page",
+//             "breakOnError": "All",
+//             "launchBrowser": true,
+//             "enableLongRunningSqlStatements": true,
+//             "enableSqlInformationDebugger": true,
+//             "tenant": "default",
+//             "usePublicURLFromServer": true,
+//             "schemaUpdateMode": "ForceSync"
+//         }
+//     ] 
+    
+// }

@@ -255,6 +255,8 @@ codeunit 70004 "Calculate Sales Entries"
                           end;*/
                         //ConsignRate.SetRange("Consignment Type", pPosSales."Consignment Type");
                         ConsignRate.SetRange("Store No.", SalesEntry."Store No.");
+                        ConsignRate.SetFilter("Start Date", '<=%1', SalesEntry."Date");
+                        ConsignRate.SetFilter("End Date", '>=%1', SalesEntry."Date");
                         SalesEntry."Discount %" := ROUND((SalesEntry."Discount Amount" / SalesEntry.Price * 100), 1);
                         if ConsignRate.FindFirst() then begin
                             repeat
