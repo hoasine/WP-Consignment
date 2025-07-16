@@ -5,6 +5,7 @@ codeunit 70004 "Calculate Sales Entries"
         RetailSetup: Record "LSC Retail Setup";
         SchedulerHdr: Record "LSC Scheduler Job Header";
         intdateFormula: Integer;
+        intrecalFormula: Integer;
         txtDateFormula: Text;
         salesDate: Date;
         endSalesDate: Date;
@@ -16,7 +17,8 @@ codeunit 70004 "Calculate Sales Entries"
     begin
         ClearLastError();
         // CalculateSalesEntries();
-        NewCalculateSalesEntries
+        NewCalculateSalesEntries;
+        NewCalculateMonthlySalesEntries();
     end;
 
     local procedure CalculateSalesEntries()
@@ -80,12 +82,59 @@ codeunit 70004 "Calculate Sales Entries"
 
     end;
 
+    procedure NewCalculateMonthlySalesEntries()
+    var
+        dtAssignMonth: Date;
+        dtAssignMonthEnd: Date;
+        dtFromDate: Date;
+        dtToDate: Date;
+    begin
+        RetailSetup.Get();
+        intrecalFormula := RetailSetup."Consign. Calc. Daily";
+        // Get today's month
+        dtAssignMonth := DMY2Date(1, Date2DMY(Today, 2), Date2DMY(Today, 3));
+        dtAssignMonthEnd := CALCDATE('1M-1D', dtAssignMonth);
+
+        if RetailSetup."Consignment Calc. Cycle" = RetailSetup."Consignment Calc. Cycle"::"Bi-weekly" then begin
+            IF intrecalFormula <> 0 then begin
+                // First half: 1st to 15th
+                dtFromDate := dtAssignMonth;
+                dtToDate := DMY2Date(intrecalFormula, Date2DMY(Today, 2), Date2DMY(Today, 3));
+                CopySalesData2(dtFromDate, dtToDate, RetailSetup."Consignment Calc. Cycle");
+
+                // Second half: 16th to end of month
+                dtFromDate := DMY2Date(intrecalFormula + 1, Date2DMY(Today, 2), Date2DMY(Today, 3));
+                dtToDate := dtAssignMonthEnd;
+                CopySalesData2(dtFromDate, dtToDate, RetailSetup."Consignment Calc. Cycle");
+                //MoveConsignmentRateBlank(Format(salesDate, 0, '<Year4><Month,2><Day,2>'));
+                //Commit();
+            end
+
+            else begin
+                // First half: 1st to 15th
+                dtFromDate := dtAssignMonth;
+                dtToDate := DMY2Date(15, Date2DMY(Today, 2), Date2DMY(Today, 3));
+                CopySalesData2(dtFromDate, dtToDate, RetailSetup."Consignment Calc. Cycle");
+
+                // Second half: 16th to end of month
+                dtFromDate := DMY2Date(16, Date2DMY(Today, 2), Date2DMY(Today, 3));
+                dtToDate := dtAssignMonthEnd;
+                CopySalesData2(dtFromDate, dtToDate, RetailSetup."Consignment Calc. Cycle");
+                //MoveConsignmentRateBlank(Format(salesDate, 0, '<Year4><Month,2><Day,2>'));
+                //Commit();    
+            end;
+
+        end;
+
+    end;
+
     procedure CopySalesData2(pSalesDate: Date; pSalesDateEnd: Date; pCycle: Enum "Consignment Calc. Cycle")
     var
         TransHeader: Record "LSC Transaction Header";
         SalesEntry: Record "LSC Trans. Sales Entry";
         ConsignHdr: Record "Daily Consignment Checklist";
         POSSales: Record "Daily Consign. Sales Details";
+        lineNoNumber: Record "Daily Consign. Sales Details";
         Missingsales: Record "Daily Consign. Sales Missing";
         recItem: Record item;
         ItemSpecialGrp: Record "LSC Item/Special Group Link";
@@ -115,6 +164,7 @@ codeunit 70004 "Calculate Sales Entries"
         AllowanceDiscPerc: Decimal;
         docNo: Code[20];
         Item: Record item;
+        BE: Record "WP MPG Setup";
     begin
         if pCycle = pCycle::Daily then
             docNo := Format(pSalesDate, 0, '<Year4><Month,2><Day,2>')
@@ -123,6 +173,7 @@ codeunit 70004 "Calculate Sales Entries"
         //Get all vendor setup for specific time range
         POSSales.Reset();
         POSSales.SetFilter("Document No.", docNo);
+        POSSales.SetRange("Date", pSalesDate, pSalesDateEnd);
         if not POSSales.IsEmpty then
             POSSales.DeleteAll();
         Missingsales.Reset();
@@ -138,14 +189,19 @@ codeunit 70004 "Calculate Sales Entries"
             ConsignHdr.Modify(true);
 
         i := 0;
-        nextLineNo := 100;
+
+        Clear(lineNoNumber);
+        lineNoNumber.SETCURRENTKEY("Line No."); // Make sure this key is sorted ascending
+        if lineNoNumber.FINDLAST() then
+            nextLineNo := lineNoNumber."Line No." + 100 else
+            nextLineNo := 100;
 
         TransHeader.Reset();
         TransHeader.SetCurrentKey("Store No.", Date);
         TransHeader.SetRange(Date, pSalesDate, pSalesDateEnd);
         TransHeader.SetFilter("Entry Status", '0|2');
         TransHeader.SetRange("Transaction Type", TransHeader."Transaction Type"::Sales);
-        TransHeader.SetLoadFields(Date, "Transaction Type", "Entry Status", "Member Card No.", "Trans. Currency", "Posted Statement No.");
+        TransHeader.SetLoadFields(Date, "Transaction Type", "Entry Status");
         if TransHeader.FindSet() then begin
             if GuiAllowed then begin
                 gdiag.Open('Processing Transaction..\Records:#1########## of #2##########\Date: #3##########');
@@ -159,16 +215,18 @@ codeunit 70004 "Calculate Sales Entries"
                 i += 1;
                 if GuiAllowed then gdiag.update(1, format(i));
                 SalesEntry.Reset();
-                SalesEntry.SetCurrentKey("Store No.", "POS Terminal No.", "Transaction No.", Date, "Gen. Prod. Posting Group");
+                // SalesEntry.SetCurrentKey("Store No.", "POS Terminal No.", "Transaction No.", Date, "Gen. Prod. Posting Group");
                 SalesEntry.SetRange("Store No.", TransHeader."Store No.");
                 SalesEntry.SetRange("POS Terminal No.", TransHeader."POS Terminal No.");
                 SalesEntry.SetRange("Transaction No.", TransHeader."Transaction No.");
+                //  SalesEntry.SetFilter("Item No.", '310B03172|310B03173');
                 SalesEntry.SetRange(Date, pSalesDate, pSalesDateEnd);
                 ConsignGroup := NewGetConsignPostGroup();
                 if ConsignGroup <> '' then SalesEntry.SetFilter("Gen. Prod. Posting Group", ConsignGroup);
                 if SalesEntry.FindSet() then begin
 
                     repeat
+                        // IF SalesEntry."Item No." = '310B03172' then begin
                         Item.Reset();
                         Item.SetLoadFields("LSC Item Family Code", "LSC Division Code", Description, "Vendor No.");
                         if Item.Get(SalesEntry."Item No.") then;
@@ -301,9 +359,12 @@ codeunit 70004 "Calculate Sales Entries"
                                                                                       //CalcConsignment(POSSales."Vendor No.", POSSales.Date, POSSales, POSSales."Consignment Type");
                                     POSSales."Profit %" := ConsignRate."Profit Margin";
                                     POSSales."Consignment %" := NewCalcConsignPerc(POSSales);
-                                    IF POSSales."Consignment %" <> 0 THEN
+                                    IF POSSales."Consignment %" <> 0 THEN begin
+                                        POSSales."Contract ID" := CalcConTractId(POSSales, POSSales."Consignment %");
+                                        // BE.Get(POSSales."Contract ID");
+                                        // POSSales."Expected Gross Profit" := BE."Expected Gross Profit";
                                         POSSales."Consignment Amount" := ROUND(POSSales."Net Amount" * (POSSales."Consignment %" / 100)) //Profit Amount
-                                    ELSE
+                                    end ELSE
                                         POSSales."Consignment Amount" := 0;
 
                                     POSSales."Member Card No." := TransHeader."Member Card No.";
@@ -364,7 +425,7 @@ codeunit 70004 "Calculate Sales Entries"
                                 End;
                             until (ConsignRate.next = 0);
                         end;
-
+                    // end;
                     until SalesEntry.Next() = 0;
                 end;
             until TransHeader.Next() = 0;
@@ -511,6 +572,7 @@ codeunit 70004 "Calculate Sales Entries"
         ConsignHdr: Record "Daily Consignment Checklist";
         POSSales: Record "Daily Consign. Sales Details";
         Missingsales: Record "Daily Consign. Sales Missing";
+        BE: Record "WP MPG Setup";
         Item: Record item;
         ItemSpecialGrp: Record "LSC Item/Special Group Link";
         Barc: Record "LSC barcodes";
@@ -669,9 +731,12 @@ codeunit 70004 "Calculate Sales Entries"
 
                         //CalcConsignment(POSSales."Vendor No.", POSSales.Date, POSSales, POSSales."Consignment Type");
                         POSSales."Consignment %" := CalcConsignPerc(POSSales);
-                        if POSSales."Consignment %" <> 0 then
+                        if POSSales."Consignment %" <> 0 then begin
+                            POSSales."Contract ID" := CalcConTractId(POSSales, POSSales."Consignment %");
+                            BE.Get(POSSales."Contract ID");
+                            POSSales."Expected Gross Profit" := BE."Expected Gross Profit";
                             POSSales."Consignment Amount" := ROUND(POSSales."Net Amount" * (POSSales."Consignment %" / 100))
-                        else
+                        end else
                             POSSales."Consignment Amount" := 0;
 
                         POSSales."Member Card No." := TransHeader."Member Card No.";
@@ -885,6 +950,29 @@ codeunit 70004 "Calculate Sales Entries"
         // if recRate.FindLast() then
         //     exit(recRate."Consignment %");
 
+    end;
+
+    local procedure CalcConTractId(pPosSales: Record "Daily Consign. Sales Details"; ConsignmentPerc: decimal): Code[50]
+    var
+        ConsignRate: Record "WP Consignment Margin Setup";
+        //recRate: Record "Consignment Rate";
+        ConsignContractId: Code[50];
+    begin
+        Clear(ConsignContractId);
+        //withStoreCode
+        ConsignRate.Reset();
+        ConsignRate.SetRange("Vendor No.", pPosSales."Vendor No.");
+        ConsignRate.SetRange("Start Date", 0D, pPosSales.Date);
+        ConsignRate.SetFilter("End Date", '>=%1|%2', pPosSales.Date, 0D);
+        ConsignRate.setrange("Item No.", pPosSales."Item No.");
+        ConsignRate.SetRange("Store No.", pPosSales."Store No.");
+        if ConsignRate.FindLast() then
+            if (ConsignmentPerc >= ConsignRate."Disc. From") AND
+            (ConsignmentPerc <= ConsignRate."Disc. To")
+            then begin
+                ConsignContractId := ConsignRate."Contract ID";
+            end;
+        exit(ConsignContractId);
     end;
 
     local procedure MoveConsignmentRateBlank(pSalesDate: Text)

@@ -9,12 +9,12 @@ table 70015 "WP Consignment Contracts"
         field(1; ID; Code[20])
         {
             Caption = 'ID';
-            trigger OnValidate()
+           /*  trigger OnValidate()
             begin
                 if "ID" <> xRec."ID" then begin
                     "ID" := NoSeriesMgt.GetNextNo(GetNoSeriesCode());
                 end;
-            end;
+            end; */
         }
         field(2; "Contract Type"; Option)
         {
@@ -52,11 +52,11 @@ table 70015 "WP Consignment Contracts"
 
     end;
 
-    trigger OnInsert()
+   /*  trigger OnInsert()
     begin
         if "ID" = '' then
             "ID" := NoSeriesMgt.GetNextNo(GetNoSeriesCode());
-    end;
+    end; */
 
     var
         NoSeriesMgt: Codeunit "No. Series";

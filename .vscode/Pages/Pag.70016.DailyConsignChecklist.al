@@ -42,14 +42,18 @@ page 70016 "Daily Consignment Checklist"
                 field("Item Category"; Rec."Item Category") { }
                 field("Item No."; Rec."Item No.") { }
                 field("Gross Price"; Rec."Gross Price") { }
-                field("Total Excl Tax"; Rec."Total Excl Tax") { }
-                field("VAT Amount"; Rec."Total Incl Tax" - Rec."Total Excl Tax") { }
-                field("Total Incl Tax"; Rec."Total Incl Tax") { }
-                field("Cost Incl Tax"; Rec."Cost Incl Tax") { }
+                field("Total Incl Tax"; Rec."Total Incl Tax") { Caption = 'Sale Incl Tax'; }
+                field("VAT Amount"; Rec."Total Incl Tax" - Rec."Total Excl Tax") { Caption = 'Sale Tax'; }
+                field("Total Excl Tax"; Rec."Total Excl Tax") { Caption = 'Sale Excl Tax'; }
+                field("Cost Excl Tax"; Rec."Cost") { Caption = 'Cost Excl Tax'; }
+                field("Cost Vat Tax"; Rec."Cost Incl Tax" - Rec."Cost") { Caption = 'Cost Vat Tax'; }
+                field("Cost Incl Tax"; Rec."Cost Incl Tax") { Caption = 'Cost Incl Tax'; }
                 field("MDR Rate Pctg"; Rec."MDR Rate Pctg") { }
                 field("MDR Rate"; Rec."MDR Rate") { }
                 field("MDR Amount"; Rec."MDR Amount") { }
                 field("Profit %"; Rec."Profit %") { }
+                field("Contract ID"; Rec."Contract ID") { }
+                field("Expected Gross Profit"; Rec."Expected Gross Profit") { }
 
             }
         }
@@ -69,8 +73,14 @@ page 70016 "Daily Consignment Checklist"
                 var
                     ConsDetail: Codeunit "Calculate Sales Entries";
                 begin
-                    ConsDetail.NewCalculateSalesEntries();
-                    CurrPage.Update(false);
+                    RetailSetup.Get();
+                    if RetailSetup."Consignment Calc. Cycle" = RetailSetup."Consignment Calc. Cycle"::Daily then begin
+
+                        ConsDetail.NewCalculateSalesEntries();
+                    end
+                    else
+                        ConsDetail.NewCalculateMonthlySalesEntries();
+
                 end;
             }
         }
@@ -81,4 +91,5 @@ page 70016 "Daily Consignment Checklist"
         ConsignmentPeriodStartDate: Date;
         ConsignmentPeriodEndDate: Date;
         ConsignmentDetail: Record "Daily Consign. Sales Details";
+        RetailSetup: Record "LSC Retail Setup";
 }

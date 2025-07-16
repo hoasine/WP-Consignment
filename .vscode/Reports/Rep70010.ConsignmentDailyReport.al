@@ -1,11 +1,12 @@
-report 70010 "Daily Consignment Purchase"
+report 70010 "Consignment Daily Report"
 {
     ApplicationArea = All;
-    Caption = 'Consignment Daily Purchase Report';
+    Caption = 'Consignment Daily Report';
     UsageCategory = ReportsAndAnalysis;
-    RDLCLayout = '.vscode\ReportLayouts\\Rep.70010.WPDailyConsignPurchList.rdl';
+    RDLCLayout = '.vscode\ReportLayouts\\Rep.70010.WPConsignmentDailyReport.rdl';
     dataset
     {
+        /*
         dataitem(CE; "Consignment Entries")
         {
             RequestFilterFields = Date, "Store No.", Division, "Product Group", "Special Group";
@@ -102,7 +103,9 @@ report 70010 "Daily Consignment Purchase"
                     DivisionName := lrecdiv.Description;
             end;
         }
+        */
     }
+
     // requestpage
     // {
     //     layout

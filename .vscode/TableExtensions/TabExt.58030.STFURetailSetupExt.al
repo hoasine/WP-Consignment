@@ -58,6 +58,7 @@ tableextension 58030 STFURetailSetupExt extends "LSC Retail Setup"
         field(58016; "Auto Post - PI"; Boolean) { Caption = 'Auto Post - Purchase Invoice'; }//IST-00007-+
         field(58017; "Consignment Calc. Cycle"; Enum "Consignment Calc. Cycle") { }//IST-00007-+
         field(58018; "Consign. Calc. Days/Months"; Integer) { MinValue = 1; }//IST-00007-+
+        field(58115; "Consign. Calc. Daily"; Integer) { Caption = 'Manual ReCalc.Daily Consign - Input 15 or 16'; }
         field(58019; "Consign. Calc. Start Date"; Date) { }//IST-00007-+
 
         //20240124-

@@ -130,6 +130,9 @@ table 70010 "Daily Consign. Sales Details"
         field(50107; "Cost Incl Tax"; Decimal) { }
         field(50108; "MDR Rate Pctg"; Decimal) { DecimalPlaces = 0 : 3; }
         field(50109; "Profit %"; Decimal) { DecimalPlaces = 0 : 3; }
+        field(50110; "Contract ID"; Code[50]) { }
+        field(50111; "Expected Gross Profit"; Decimal) { DecimalPlaces = 0 : 3; }
+
     }
     keys
     {

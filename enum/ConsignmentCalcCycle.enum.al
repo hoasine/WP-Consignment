@@ -4,4 +4,5 @@ enum 70000 "Consignment Calc. Cycle"
 
     value(0; Daily) { }
     value(1; Monthly) { }
+    value(2; "Bi-weekly") { }
 }
