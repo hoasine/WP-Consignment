@@ -6,6 +6,48 @@ report 70010 "Consignment Daily Report"
     RDLCLayout = '.vscode\ReportLayouts\\Rep.70010.WPConsignmentDailyReport.rdl';
     dataset
     {
+        dataitem(CE; "Daily Consign. Sales Details")
+        {
+            RequestFilterFields = Date, "Store No.", Division, "Product Group", "Special Group";
+            column(Brand; "Special Group") { }
+            trigger OnPreDataItem()
+            begin
+                DateFilter := ce.GetFilter(Date);
+                StoreFilter := ce.GetFilter("Store No.");
+                DivisionFilter := ce.GetFilter(Division);
+                RPGFilter := ce.GetFilter("Product Group");
+                BrandFilter := ce.GetFilter("Special Group");
+
+                ce.SetFilter("Document No.", '<>%1', '');
+            end;
+
+            trigger OnAfterGetRecord()
+            var
+                LRecStore: Record "LSC Store";
+                LRecVendor: Record "Vendor";
+                lrecBrand: Record "LSC Item Special Groups";
+                lrecdiv: Record "LSC Division";
+            begin
+                CostRatePctg := round(100 - "Consignment %", 0.01);
+                costprice := "Total Excl Tax" - "Consignment Amount"; //Total - profit amount
+                costTax := costprice * ("Tax Rate" / 100); //Total - profit amount
+                clear(LRecStore);
+                if LRecStore.Get("Store No.") then
+                    StoreName := LRecStore.Name;
+
+                clear(lrecvendor);
+                if LRecVendor.get("Vendor No.") then
+                    VendorName := LRecVendor.Name;
+
+                clear(lrecBrand);
+                if lrecBrand.Get("Special Group") then
+                    BrandName := lrecBrand.Description;
+
+                clear(lrecdiv);
+                if lrecdiv.get(Division) then
+                    DivisionName := lrecdiv.Description;
+            end;
+        }
         /*
         dataitem(CE; "Consignment Entries")
         {
