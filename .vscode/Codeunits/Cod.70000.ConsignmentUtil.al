@@ -3041,7 +3041,7 @@ codeunit 70000 "Consignment Util"
         Vendor: Record Vendor;
     begin
         CLEAR(ConsignmentBillingPeriod);
-        ConsignmentBillingPeriod.setrange("Batch is done", false);
+        /*ConsignmentBillingPeriod.setrange("Batch is done", false);
         ConsignmentBillingPeriod.setrange("Consignment Billing Type", ConsignmentBillingPeriod."Consignment Billing Type"::"Buying Income");
         if ConsignmentBillingPeriod.FindFirst then begin
             REPEAT
@@ -3053,6 +3053,8 @@ codeunit 70000 "Consignment Util"
                 end;
             until ConsignmentBillingPeriod.Next() = 0;
         end;
+        */
+        CreateSalesInvoices(ConsignmentBillingPeriod);
     end;
 
     var
