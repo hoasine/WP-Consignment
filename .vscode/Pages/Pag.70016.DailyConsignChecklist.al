@@ -20,6 +20,8 @@ page 70016 "Daily Consignment Checklist"
     InsertAllowed = false;
     DeleteAllowed = false;
     PromotedActionCategories = 'New,Process,Report,Navigate';
+    SourceTableView = sorting("Date")
+                      order(descending);
 
     layout
     {
@@ -34,6 +36,7 @@ page 70016 "Daily Consignment Checklist"
 
             repeater(Details)
             {
+
                 field("Store No."; Rec."Store No.") { }
                 field("Receipt No."; Rec."Receipt No.") { }
                 field("Date"; Rec."Date") { }
@@ -83,6 +86,24 @@ page 70016 "Daily Consignment Checklist"
 
                 end;
             }
+            action("Export Report")
+            {
+                Caption = 'Consignment Daily Report';
+                ToolTip = 'Consignment Daily Report';
+                ApplicationArea = All;
+                Image = ExportToExcel;
+                // Promoted = true;
+                // PromotedCategory = Category5;
+                // PromotedIsBig = true;
+                // Ellipsis = true;
+
+                trigger OnAction()
+
+                begin
+                    Report.RunModal(70010, true, false);
+                end;
+            }
+
         }
     }
     var

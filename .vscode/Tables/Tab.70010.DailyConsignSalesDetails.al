@@ -4,7 +4,10 @@ table 70010 "Daily Consign. Sales Details"
     {
         field(1; "Transaction No."; Integer) { }
         field(2; "Trans. Line No."; Integer) { }
-        field(3; "Store No."; Code[20]) { }
+        field(3; "Store No."; Code[20])
+        {
+            TableRelation = "LSC Store"."No.";
+        }
         field(4; "Receipt No."; Code[20]) { }
         field(5; "USER SID"; Guid) { }
         field(6; "Session ID"; Integer) { }
@@ -26,11 +29,28 @@ table 70010 "Daily Consign. Sales Details"
             end;
         }
         field(12; "Date"; Date) { }
-        field(13; "Vendor No."; Code[20]) { }
-        field(14; "Division"; Code[20]) { }
-        field(15; "Item Category"; Code[20]) { }
-        field(16; "Product Group"; Code[20]) { }
-        field(17; "Special Group"; Code[20]) { }
+        field(13; "Vendor No."; Code[20])
+        {
+            Caption = 'Vendor No.';
+            TableRelation = Vendor."No.";
+        }
+        field(14; "Division"; Code[20])
+        {
+            Caption = 'Vendor No.';
+            TableRelation = "LSC Division"."Code";
+        }
+        field(15; "Item Category"; Code[20])
+        {
+            TableRelation = "Item Category"."Code";
+        }
+        field(16; "Product Group"; Code[20])
+        {
+            TableRelation = "LSC Retail Product Group".Code;
+        }
+        field(17; "Special Group"; Code[20])
+        {
+            TableRelation = "LSC Item Special Groups".Code;
+        }
         field(18; "Product Group Description"; Text[100])
         {
             FieldClass = FlowField;
