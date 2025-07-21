@@ -148,6 +148,7 @@ table 70007 "Consignment Header"
         field(80; "Discrepancy"; Boolean) { }
         field(81; "Contract ID"; Code[20]) { Caption = 'Contract ID'; }
         field(82; "Billing Period ID"; Code[20]) { Caption = 'Billing Period ID'; }
+        field(83; "Expected Gross Profit"; Decimal) { Caption = 'Expected Gross Profit'; }
 
     }
 
