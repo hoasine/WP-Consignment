@@ -22,7 +22,16 @@ table 70018 "WP Counter Area"
             FieldClass = FlowField;
             CalcFormula = lookup("LSC Store"."NAme" WHERE("No." = FIELD("Store No.")));
         }
+        field(56; "Start Date"; Date)
+        {
+            Caption = 'Start Date';
 
+        }
+        field(57; "End Date"; Date)
+        {
+            Caption = 'Ending Date';
+
+        }
         field(4; "Contract ID"; Code[20])
         {
             Caption = 'Contract ID';
@@ -288,6 +297,9 @@ table 70018 "WP Counter Area"
         key(PK; "Vendor No.", "Store No.", "Contract ID", "Location ID", "Floor", "Brand")
         {
             Clustered = true;
+        }
+        key(PK1; "Vendor No.", "Store No.", "Contract ID", "Start Date", "End Date")
+        {
         }
     }
 }

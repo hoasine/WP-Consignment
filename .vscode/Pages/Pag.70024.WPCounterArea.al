@@ -24,6 +24,14 @@ page 70024 "WP Counter Area"
                 {
                     ToolTip = 'Specifies the value of the Store Description field.', Comment = '%';
                 }
+                field("Start Date"; Rec."Start Date")
+                {
+                    ToolTip = 'Specifies the value of the Starting Date field.', Comment = '%';
+                }
+                field("End Date"; Rec."End Date")
+                {
+                    ToolTip = 'Specifies the value of the Ending Date field.', Comment = '%';
+                }
                 field("Contract ID"; Rec."Contract ID")
                 {
                     ToolTip = 'Specifies the value of the Contract ID field.', Comment = '%';
