@@ -1684,7 +1684,7 @@ codeunit 70000 "Consignment Util"
         dtAssignMonth := CALCDATE('-1M', DMY2Date(1, Date2DMY(Today, 2), Date2DMY(Today, 3))); // 
         dtAssignMonthEnd := CALCDATE('1M-1D', dtAssignMonth); // 
 
-        CreateSalesInvoices(dtAssignMonth, dtAssignMonthEnd, ConsignmentBillingPeriod);
+        CreateSalesInvoices(dtAssignMonth, dtAssignMonthEnd);
     end;
 
     procedure CreateBillingEntries(DocNo: code[20];
@@ -2952,7 +2952,7 @@ codeunit 70000 "Consignment Util"
         // end;
 
     end;
-    end;
+    
 
     procedure getProductGroupDesc(itemNo: code[20]): text[50]
     var
