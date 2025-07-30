@@ -294,12 +294,10 @@ table 70018 "WP Counter Area"
     }
     keys
     {
-        key(PK; "Vendor No.", "Store No.", "Contract ID", "Location ID", "Floor", "Brand")
+        key(PK; "Vendor No.", "Store No.", "Contract ID", "Start Date", "End Date")
         {
             Clustered = true;
         }
-        key(PK1; "Vendor No.", "Store No.", "Contract ID", "Start Date", "End Date")
-        {
-        }
+
     }
 }
