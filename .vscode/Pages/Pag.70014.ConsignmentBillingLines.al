@@ -8,7 +8,7 @@ page 70014 "Consignment Billing Lines"
     Editable = false;
 
     layout
-    {
+    {//Test
         area(Content)
         {
             repeater(Group)
