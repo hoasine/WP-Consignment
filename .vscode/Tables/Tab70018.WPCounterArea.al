@@ -2,7 +2,7 @@ table 70018 "WP Counter Area"
 {
     Caption = 'WP Counter Area';
     DataClassification = ToBeClassified;
-
+    //ok 300725
     fields
     {
         field(1; "Vendor No."; Code[20])
@@ -294,6 +294,7 @@ table 70018 "WP Counter Area"
     }
     keys
     {
+        //ok
         key(PK; "Vendor No.", "Store No.", "Contract ID", "Start Date", "End Date")
         {
             Clustered = true;
