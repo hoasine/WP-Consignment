@@ -2,7 +2,7 @@ table 70018 "WP Counter Area"
 {
     Caption = 'WP Counter Area';
     DataClassification = ToBeClassified;
-    //ok 300725
+    //ok 300725fsfsfsfs
     fields
     {
         field(1; "Vendor No."; Code[20])
