@@ -228,6 +228,7 @@ codeunit 70004 "Calculate Sales Entries"
                         if VendorItem.Get(Item."Vendor No.") then;
                         //withStoreCode
                         IF VendorItem."Is Consignment Vendor" then Begin
+                            SalesEntry."Discount %" := ROUND((SalesEntry."Discount Amount" / SalesEntry.Price * 100), 1);
                             ConsignRate.Reset();
                             ConsignRate.SetRange("Vendor No.", Item."Vendor No.");
                             ConsignRate.SetRange("Item No.", SalesEntry."Item No.");
@@ -254,7 +255,8 @@ codeunit 70004 "Calculate Sales Entries"
                             ConsignRate.SetRange("Store No.", SalesEntry."Store No.");
                             ConsignRate.SetFilter("Start Date", '<=%1', SalesEntry."Date");
                             ConsignRate.SetFilter("End Date", '>=%1', SalesEntry."Date");
-                            SalesEntry."Discount %" := ROUND((SalesEntry."Discount Amount" / SalesEntry.Price * 100), 1);
+                            ConsignRate.SetFilter("Disc. From", '<=%1', SalesEntry."Discount %");
+                            ConsignRate.SetFilter("Disc. To", '>=%1', SalesEntry."Discount %");
                             if ConsignRate.FindFirst() then begin
                                 repeat
                                     DiscPercSaleEntry := 0;
@@ -357,9 +359,10 @@ codeunit 70004 "Calculate Sales Entries"
                                         POSSales."Discount %" := SalesEntry."Discount %"; //Exclude allowance
                                                                                           //CalcConsignment(POSSales."Vendor No.", POSSales.Date, POSSales, POSSales."Consignment Type");
                                         POSSales."Profit %" := ConsignRate."Profit Margin";
+                                        POSSales."Contract ID" := CalcConTractId(POSSales, POSSales."Profit %");
                                         POSSales."Consignment %" := NewCalcConsignPerc(POSSales);
                                         IF POSSales."Consignment %" <> 0 THEN begin
-                                            POSSales."Contract ID" := CalcConTractId(POSSales, POSSales."Consignment %");
+
                                             // BE.Get(POSSales."Contract ID");
                                             // POSSales."Expected Gross Profit" := BE."Expected Gross Profit";
                                             POSSales."Consignment Amount" := ROUND(POSSales."Net Amount" * (POSSales."Consignment %" / 100)) //Profit Amount
