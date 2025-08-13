@@ -6,7 +6,6 @@ table 70009 "Daily Consignment Checklist"
     fields
     {
         field(1; "Document No."; Code[20]) { }
-
         field(10; "Generated Date Time"; DateTime) { }
     }
 

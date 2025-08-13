@@ -66,7 +66,7 @@ codeunit 70004 "Calculate Sales Entries"
     begin
         RetailSetup.Get();
         intdateFormula := RetailSetup."Consign. Calc. Days/Months";
-        intdateFormula := 1;
+        // intdateFormula := 1;
         // dtassignDate := Today;
         dtassignDate := Today;
 
@@ -96,21 +96,16 @@ codeunit 70004 "Calculate Sales Entries"
         dtAssignMonthEnd := CALCDATE('1M-1D', dtAssignMonth);
 
         if RetailSetup."Consignment Calc. Cycle" = RetailSetup."Consignment Calc. Cycle"::"Bi-weekly" then begin
+            //Lấy từ ngày đầu tới ngày retail setup và lấy từ ngày đó đến cuối tháng
             IF intrecalFormula <> 0 then begin
-                // First half: 1st to 15th
                 dtFromDate := dtAssignMonth;
                 dtToDate := DMY2Date(intrecalFormula, Date2DMY(Today, 2), Date2DMY(Today, 3));
                 CopySalesData2(dtFromDate, dtToDate, RetailSetup."Consignment Calc. Cycle");
 
-                // Second half: 16th to end of month
                 dtFromDate := DMY2Date(intrecalFormula + 1, Date2DMY(Today, 2), Date2DMY(Today, 3));
                 dtToDate := dtAssignMonthEnd;
                 CopySalesData2(dtFromDate, dtToDate, RetailSetup."Consignment Calc. Cycle");
-                //MoveConsignmentRateBlank(Format(salesDate, 0, '<Year4><Month,2><Day,2>'));
-                //Commit();
-            end
-
-            else begin
+            end else begin
                 // First half: 1st to 15th
                 dtFromDate := dtAssignMonth;
                 dtToDate := DMY2Date(15, Date2DMY(Today, 2), Date2DMY(Today, 3));
@@ -120,12 +115,8 @@ codeunit 70004 "Calculate Sales Entries"
                 dtFromDate := DMY2Date(16, Date2DMY(Today, 2), Date2DMY(Today, 3));
                 dtToDate := dtAssignMonthEnd;
                 CopySalesData2(dtFromDate, dtToDate, RetailSetup."Consignment Calc. Cycle");
-                //MoveConsignmentRateBlank(Format(salesDate, 0, '<Year4><Month,2><Day,2>'));
-                //Commit();    
             end;
-
         end;
-
     end;
 
     procedure CopySalesData2(pSalesDate: Date; pSalesDateEnd: Date; pCycle: Enum "Consignment Calc. Cycle")
@@ -171,23 +162,26 @@ codeunit 70004 "Calculate Sales Entries"
             docNo := Format(pSalesDate, 0, '<Year4><Month,2><Day,2>')
         else
             docNo := Format(pSalesDate, 0, '<Year4><Month,2>');
+
         //Get all vendor setup for specific time range
         POSSales.Reset();
-        POSSales.SetFilter("Document No.", docNo);
+        // POSSales.SetFilter("Document No.", docNo);
         POSSales.SetRange("Date", pSalesDate, pSalesDateEnd);
         if not POSSales.IsEmpty then
             POSSales.DeleteAll();
-        Missingsales.Reset();
-        Missingsales.SetFilter("Document No.", docNo);
-        if not Missingsales.IsEmpty then
-            Missingsales.DeleteAll();
-        ConsignHdr.Reset();
-        ConsignHdr.SetRange("Document No.", docNo);
-        if not ConsignHdr.FindFirst() then begin
-            ConsignHdr."Document No." := docNo;
-            ConsignHdr.Insert(true);
-        end else
-            ConsignHdr.Modify(true);
+
+        // Missingsales.Reset();
+        // Missingsales.SetFilter("Document No.", docNo);
+        // if not Missingsales.IsEmpty then
+        //     Missingsales.DeleteAll();
+
+        // ConsignHdr.Reset();
+        // ConsignHdr.SetRange("Document No.", docNo);
+        // if not ConsignHdr.FindFirst() then begin
+        //     ConsignHdr."Document No." := docNo;
+        //     ConsignHdr.Insert(true);
+        // end else
+        //     ConsignHdr.Modify(true);
 
         i := 0;
 

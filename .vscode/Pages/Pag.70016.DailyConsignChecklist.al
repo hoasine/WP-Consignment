@@ -78,12 +78,10 @@ page 70016 "Daily Consignment Checklist"
                 begin
                     RetailSetup.Get();
                     if RetailSetup."Consignment Calc. Cycle" = RetailSetup."Consignment Calc. Cycle"::Daily then begin
-
                         ConsDetail.NewCalculateSalesEntries();
                     end
                     else
                         ConsDetail.NewCalculateMonthlySalesEntries();
-
                 end;
             }
             action("Export Report")
