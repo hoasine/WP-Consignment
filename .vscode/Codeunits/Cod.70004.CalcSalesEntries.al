@@ -221,14 +221,15 @@ codeunit 70004 "Calculate Sales Entries"
                 if SalesEntry.FindSet() then begin
 
                     repeat
-                        // IF SalesEntry."Item No." = '310B03172' then begin
+                        // IF SalesEntry."Receipt No." = '0000000107000002890' then begin
                         Item.Reset();
                         Item.SetLoadFields("LSC Item Family Code", "LSC Division Code", Description, "Vendor No.");
                         if Item.Get(SalesEntry."Item No.") then;
                         if VendorItem.Get(Item."Vendor No.") then;
                         //withStoreCode
                         IF VendorItem."Is Consignment Vendor" then Begin
-                            SalesEntry."Discount %" := ROUND((SalesEntry."Discount Amount" / SalesEntry.Price * 100), 1);
+                            // SalesEntry."Discount %" := ROUND((SalesEntry."Discount Amount" / SalesEntry.Price  * 100), 1);
+                            SalesEntry."Discount %" := SalesEntry."Discount %";
                             ConsignRate.Reset();
                             ConsignRate.SetRange("Vendor No.", Item."Vendor No.");
                             ConsignRate.SetRange("Item No.", SalesEntry."Item No.");
@@ -255,13 +256,12 @@ codeunit 70004 "Calculate Sales Entries"
                             ConsignRate.SetRange("Store No.", SalesEntry."Store No.");
                             ConsignRate.SetFilter("Start Date", '<=%1', SalesEntry."Date");
                             ConsignRate.SetFilter("End Date", '>=%1', SalesEntry."Date");
-                            ConsignRate.SetFilter("Disc. From", '<=%1', SalesEntry."Discount %");
-                            ConsignRate.SetFilter("Disc. To", '>=%1', SalesEntry."Discount %");
+                            ConsignRate.SetFilter("Disc. From", '<=%1', ABS(SalesEntry."Discount %"));
+                            ConsignRate.SetFilter("Disc. To", '>=%1', ABS(SalesEntry."Discount %"));
                             if ConsignRate.FindFirst() then begin
                                 repeat
                                     DiscPercSaleEntry := 0;
                                     DiscPercSaleEntry := SalesEntry."Discount %";//Exclude allowance
-                                                                                 //if (ABS(DiscPercSaleEntry) >= ConsignRate."Disc. From") and (ABS(DiscPercSaleEntry) <= ConsignRate."Disc. To") then begin
 
                                     Clear(POSSales);
                                     POSSales.Reset();
@@ -965,12 +965,12 @@ codeunit 70004 "Calculate Sales Entries"
         //withStoreCode
         ConsignRate.Reset();
         ConsignRate.SetRange("Vendor No.", pPosSales."Vendor No.");
-        ConsignRate.SetFilter("Start Date", '>=%1', pPosSales.Date);
-        ConsignRate.SetFilter("End Date", '<=%1', pPosSales.Date);
+        ConsignRate.SetFilter("Start Date", '<=%1', pPosSales.Date);
+        ConsignRate.SetFilter("End Date", '>=%1', pPosSales.Date);
         ConsignRate.setrange("Item No.", pPosSales."Item No.");
         ConsignRate.SetRange("Store No.", pPosSales."Store No.");
-        ConsignRate.SetFilter("Disc. From", '>=%1', ConsignmentPerc);
-        ConsignRate.SetFilter("Disc. To", '<=%1', ConsignmentPerc);
+        ConsignRate.SetFilter("Disc. From", '<=%1', ConsignmentPerc);
+        ConsignRate.SetFilter("Disc. To", '>=%1', ConsignmentPerc);
         if ConsignRate.FindFirst() then
             ConsignContractId := ConsignRate."Contract ID";
         exit(ConsignContractId);
