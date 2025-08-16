@@ -221,7 +221,7 @@ codeunit 70004 "Calculate Sales Entries"
                 if SalesEntry.FindSet() then begin
 
                     repeat
-                        // IF SalesEntry."Receipt No." = '0000000107000002890' then begin
+                        // IF SalesEntry."Receipt No." = '0000000504000000354' then begin
                         Item.Reset();
                         Item.SetLoadFields("LSC Item Family Code", "LSC Division Code", Description, "Vendor No.");
                         if Item.Get(SalesEntry."Item No.") then;
@@ -229,7 +229,7 @@ codeunit 70004 "Calculate Sales Entries"
                         //withStoreCode
                         IF VendorItem."Is Consignment Vendor" then Begin
                             // SalesEntry."Discount %" := ROUND((SalesEntry."Discount Amount" / SalesEntry.Price  * 100), 1);
-                            SalesEntry."Discount %" := SalesEntry."Discount %";
+                            SalesEntry."Discount %" := Round(SalesEntry."Discount %");
                             ConsignRate.Reset();
                             ConsignRate.SetRange("Vendor No.", Item."Vendor No.");
                             ConsignRate.SetRange("Item No.", SalesEntry."Item No.");
@@ -428,7 +428,7 @@ codeunit 70004 "Calculate Sales Entries"
                                 until (ConsignRate.next = 0);
                             end;
                         End;
-                    // end;
+                    //   end;
                     until SalesEntry.Next() = 0;
                 end;
             until TransHeader.Next() = 0;

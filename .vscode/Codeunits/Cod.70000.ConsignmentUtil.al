@@ -1462,7 +1462,7 @@ codeunit 70000 "Consignment Util"
                         //ConsignRate.SetRange("Consignment Type", pPosSales."Consignment Type");
                         ConsignRate.SetRange("Store No.", SalesEntry."Store No.");
                         // SalesEntry."Discount %" := ROUND((SalesEntry."Discount Amount" / SalesEntry.Price * 100), 1);
-                        SalesEntry."Discount %" := SalesEntry."Discount %";
+                        SalesEntry."Discount %" := Round(SalesEntry."Discount %");
                         if ConsignRate.FindFirst() then begin
                             repeat
                                 DiscPercSaleEntry := 0;
