@@ -40,7 +40,8 @@ page 70008 "Consignment Document"
                 }
                 field("Document Date"; Rec."Document Date") { ApplicationArea = All; ToolTip = 'Specifies the value of the Document Date field.'; }
                 field(Status; Rec.Status) { ApplicationArea = All; ToolTip = 'Specifies the value of the Status field.'; }
-
+                field("Contract ID"; Rec."Contract ID") { ApplicationArea = All; ToolTip = 'Specifies the value of the Contract ID field.'; }
+                field("Billing Period ID"; Rec."Billing Period ID") { ApplicationArea = All; ToolTip = 'Specifies the value of the Contract ID field.'; }
                 group(Documents)
                 {
                     Caption = 'Documents Information';
@@ -482,8 +483,8 @@ page 70008 "Consignment Document"
 
         cuConsignUtil.DeleteSalesDateByDocument_ALL(rec."Document No.");
         cuConsignUtil.GetInfo(rec."Vendor No.", rec."Start Date", rec."End Date", StoreNo);
-        cuConsignUtil.CopySalesData2(rec."Start Date", rec."End Date", StoreNo, rec."Vendor No.", rec."Document No.");
-        //cuconsignutil.CreateBillingEntries(rec."Document No.");
+        cuConsignUtil.CopySalesData2(rec."Start Date", rec."End Date", StoreNo, rec."Vendor No.", rec."Document No.", rec."Contract ID", rec."Billing Period ID");
+        cuconsignutil.CreateBillingEntries(rec."Document No.", rec."Contract ID", rec."Billing Period ID");
         CurrPage.Update(false);
     end;
 

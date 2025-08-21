@@ -3111,11 +3111,8 @@ codeunit 70000 "Consignment Util"
         CLEAR(ConsignmentBillingPeriod);
         Clear(ConsignmentMarginSetup);
 
-        //ConsignmentBillingPeriod.SetCurrentKey("Batch is done", "Confirm Email");
         ConsignmentBillingPeriod.setrange("Batch is done", false);
-        // ConsignmentBillingPeriod.setrange("Consignment Billing Type", ConsignmentBillingPeriod."Consignment Billing Type"::"Consignment Sales");
         ConsignmentBillingPeriod.setrange("Consignment Billing Type", ConsignmentBillingPeriod."Consignment Billing Type"::"Buying Income");
-        //ConsignmentBillingPeriod.SetLoadFields("Batch is done", "Billing Cut-off Date", "Start Date", "End Date", "Batch Timestamp", "Run By USERID");
         if ConsignmentBillingPeriod.FindFirst then begin
             REPEAT
 
@@ -3177,10 +3174,10 @@ codeunit 70000 "Consignment Util"
                     end;
 
 
-                    /*   ConsignmentBillingPeriod."Batch is done" := true;
-                      ConsignmentBillingPeriod."Batch Timestamp" := CurrentDateTime;
-                      ConsignmentBillingPeriod."Run By USERID" := UserId;
-                      ConsignmentBillingPeriod.Modify(); */
+                    ConsignmentBillingPeriod."Batch is done" := true;
+                    ConsignmentBillingPeriod."Batch Timestamp" := CurrentDateTime;
+                    ConsignmentBillingPeriod."Run By USERID" := UserId;
+                    ConsignmentBillingPeriod.Modify();
                 end;
             UNTIL ConsignmentBillingPeriod.NEXT = 0;
         end;
