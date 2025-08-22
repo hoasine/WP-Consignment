@@ -146,8 +146,31 @@ table 70007 "Consignment Header"
         field(72; "Total Store UnPosted"; Integer) { }
         field(73; "Total Store UnPosted Amount"; Decimal) { }
         field(80; "Discrepancy"; Boolean) { }
-        field(81; "Contract ID"; Code[20]) { Caption = 'Contract ID'; }
-        field(82; "Billing Period ID"; Code[20]) { Caption = 'Billing Period ID'; }
+        field(81; "Contract ID"; Code[20])
+        {
+            Caption = 'Contract ID';
+            //TableRelation = Vendor."No." where("Is Consignment Vendor" = filter(true));
+            TableRelation = "WP Consignment Contracts"."ID";
+            DataClassification = ToBeClassified;
+        }
+        field(82; "Billing Period ID"; Code[20])
+        {
+            Caption = 'Billing Period ID';
+            //   TableRelation = Vendor."No." where("Is Consignment Vendor" = filter(true));
+            TableRelation = "WP B.Inc Billing Periods".ID;
+            ;
+            DataClassification = ToBeClassified;
+            trigger OnLookup()
+            var
+                Period: Record "WP B.Inc Billing Periods";
+            begin
+                Period.SetRange("End Date", 0D, Today); // only show periods with End Date <= Today
+                if Page.RunModal(Page::"WP Billing Periods", Period) = Action::LookupOK then begin
+                    Rec."Billing Period ID" := Period.ID;
+                    Rec."End Date" := Period."End Date";
+                end;
+            end;
+        }
         field(83; "Expected Gross Profit"; Decimal) { Caption = 'Expected Gross Profit'; }
 
     }

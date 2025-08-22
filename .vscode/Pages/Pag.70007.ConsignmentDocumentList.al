@@ -48,6 +48,16 @@ page 70007 "Consignment Document List"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Status field.';
                 }
+                field("Contract ID"; Rec."Contract ID")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Contract ID field.';
+                }
+                field("Billing Period ID"; Rec."Billing Period ID")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the value of the Billing Period ID field.';
+                }
                 field("Email Sent"; Rec."Email Sent")
                 {
                     ApplicationArea = All;

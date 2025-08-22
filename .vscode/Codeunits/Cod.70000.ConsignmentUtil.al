@@ -3116,58 +3116,59 @@ codeunit 70000 "Consignment Util"
         if ConsignmentBillingPeriod.FindFirst then begin
             REPEAT
 
-                if (ConsignmentBillingPeriod."Billing Cut-off Date" <= Today) then begin
+                if (ConsignmentBillingPeriod."Billing Cut-off Date" = Today) then begin
                     Vendor.Reset();
                     Vendor.SetRange("Is Consignment Vendor", true);
-                    Vendor.setrange("Consign. Billing Frequency", ConsignmentBillingPeriod."Period Type");
-                    Vendor.SetLoadFields("Is Consignment Vendor", "Consign. Start Date");
+                    // Vendor.setrange("Consign. Billing Frequency", ConsignmentBillingPeriod."Period Type");
+                    //Vendor.SetLoadFields("Is Consignment Vendor", "Consign. Start Date");
                     if Vendor.FindSet() then begin
                         repeat
-                            if (Vendor."Consign. Start Date" <= ConsignmentBillingPeriod."Start Date") then begin
-                                MGPSetup.SetRange("Vendor No.", Vendor."No.");
-                                MGPSetup.SetRange("Billing Period ID", ConsignmentBillingPeriod.ID);
-                                if MGPSetup.FindSet() then begin
+                            // if (Vendor."Consign. Start Date" <= ConsignmentBillingPeriod."Start Date") then begin
+                            MGPSetup.SetRange("Vendor No.", Vendor."No.");
+                            MGPSetup.SetRange("Billing Period ID", ConsignmentBillingPeriod.ID);
+                            if MGPSetup.FindSet() then begin
+                                repeat
                                     IF MGPSetup."Vendor No." <> '' then begin
-                                        repeat
-                                            //check duplicate documents-
-                                            ConsignmentHeader.Reset();
-                                            ConsignmentHeader.setrange("Vendor No.", Vendor."No.");
-                                            ConsignmentHeader.setrange("Start Date", ConsignmentBillingPeriod."Start Date");
-                                            ConsignmentHeader.SetRange("End Date", ConsignmentBillingPeriod."End Date");
-                                            ConsignmentHeader.SetLoadFields("Vendor No.", "Start Date", "End Date", Status, "Document Date");
-                                            if ConsignmentHeader.FindFirst() then
-                                                if (ConsignmentHeader.status = ConsignmentHeader.status::Open) then
-                                                    ConsignmentHeader.Delete(true);
+                                        //check duplicate documents-
+                                        ConsignmentHeader.Reset();
+                                        ConsignmentHeader.setrange("Vendor No.", Vendor."No.");
+                                        ConsignmentHeader.setrange("Start Date", ConsignmentBillingPeriod."Start Date");
+                                        ConsignmentHeader.SetRange("End Date", ConsignmentBillingPeriod."End Date");
+                                        ConsignmentHeader.SetLoadFields("Vendor No.", "Start Date", "End Date", Status, "Document Date");
+                                        if ConsignmentHeader.FindFirst() then
+                                            if (ConsignmentHeader.status = ConsignmentHeader.status::Open) then
+                                                ConsignmentHeader.Delete(true);
 
-                                            //check duplicate documents+
-                                            //create documents-
-                                            ConsignmentHeader.Reset();
-                                            ConsignmentHeader.Init();
-                                            ConsignmentHeader."Document No." := '';
-                                            ConsignmentHeader."Document Date" := ConsignmentBillingPeriod."Billing Cut-off Date";
-                                            ConsignmentHeader."Vendor No." := Vendor."No.";
-                                            ConsignmentHeader."Start Date" := ConsignmentBillingPeriod."Start Date";
-                                            ConsignmentHeader."End Date" := ConsignmentBillingPeriod."End Date";
-                                            ConsignmentHeader."Contract ID" := MGPSetup."Contract ID";
-                                            ConsignmentHeader."Billing Period ID" := MGPSetup."Billing Period ID";
-                                            ConsignmentHeader."Expected Gross Profit" := MGPSetup."Expected Gross Profit";
-                                            ConsignmentHeader.Insert(true);
+                                        //check duplicate documents+
+                                        //create documents-
+                                        ConsignmentHeader.Reset();
+                                        ConsignmentHeader.Init();
+                                        ConsignmentHeader."Document No." := '';
+                                        ConsignmentHeader."Document Date" := ConsignmentBillingPeriod."Billing Cut-off Date";
+                                        ConsignmentHeader."Vendor No." := Vendor."No.";
+                                        ConsignmentHeader."Start Date" := ConsignmentBillingPeriod."Start Date";
+                                        ConsignmentHeader."End Date" := ConsignmentBillingPeriod."End Date";
+                                        ConsignmentHeader."Contract ID" := MGPSetup."Contract ID";
+                                        ConsignmentHeader."Billing Period ID" := MGPSetup."Billing Period ID";
+                                        ConsignmentHeader."Expected Gross Profit" := MGPSetup."Expected Gross Profit";
+                                        ConsignmentHeader.Insert(true);
 
-                                            DeleteSalesDateByDocument(ConsignmentHeader."Document No.", MGPSetup."Contract ID");
-                                            GetInfo(ConsignmentHeader."Vendor No.", ConsignmentHeader."Start Date", ConsignmentHeader."End Date", '');
-                                            CopySalesData2(ConsignmentHeader."Start Date", ConsignmentHeader."End Date", '', ConsignmentHeader."Vendor No.", ConsignmentHeader."Document No.", MGPSetup."Contract ID", MGPSetup."Billing Period ID");
-                                            CreateBillingEntries(ConsignmentHeader."Document No.", MGPSetup."Contract ID", MGPSetup."Billing Period ID");
+                                        DeleteSalesDateByDocument(ConsignmentHeader."Document No.", MGPSetup."Contract ID");
+                                        GetInfo(ConsignmentHeader."Vendor No.", ConsignmentHeader."Start Date", ConsignmentHeader."End Date", '');
+                                        CopySalesData2(ConsignmentHeader."Start Date", ConsignmentHeader."End Date", '', ConsignmentHeader."Vendor No.", ConsignmentHeader."Document No.", MGPSetup."Contract ID", MGPSetup."Billing Period ID");
+                                        CreateBillingEntries(ConsignmentHeader."Document No.", MGPSetup."Contract ID", MGPSetup."Billing Period ID");
 
-                                            if ConsignmentHeader.Status = ConsignmentHeader.Status::Open then begin
-                                                ConsignmentHeader.Status := ConsignmentHeader.Status::Released;
-                                                ConsignmentHeader.Modify();
-                                            end;
+                                        if ConsignmentHeader.Status = ConsignmentHeader.Status::Open then begin
+                                            ConsignmentHeader.Status := ConsignmentHeader.Status::Released;
+                                            ConsignmentHeader.Modify();
+                                        end;
                                         //create documents+
-                                        until MGPSetup.Next() = 0;
                                     end;
-                                end;
+                                until MGPSetup.Next() = 0;
 
                             end;
+
+                        //end;
                         until Vendor.Next() = 0;
 
 
