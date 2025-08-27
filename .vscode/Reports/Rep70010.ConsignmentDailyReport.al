@@ -42,6 +42,7 @@ report 70010 "Consignment Daily Report"
                 ce.SetFilter("Date", DateFilter);
                 if StoreFilter <> '' then ce.SetRange("Store No.", StoreFilter);
                 if DivisionFilter <> '' then ce.SetRange("Division", DivisionFilter);
+                if VendorFilter <> '' then ce.SetRange("Vendor No.", VendorFilter);
                 if BrandFilter <> '' then ce.SetRange("Special Group", BrandFilter);
                 if RPGFilter <> '' then ce.SetRange("Product Group", RPGFilter);
                 if ItemCategoryFilter <> '' then ce.SetRange("Item Category", ItemCategoryFilter);
@@ -116,6 +117,10 @@ report 70010 "Consignment Daily Report"
                     {
                         TableRelation = "LSC Store"."No.";
                     }
+                    field("Vendor"; VendorFilter)
+                    {
+                        TableRelation = "Vendor"."No.";
+                    }
                     field("Division"; DivisionFilter)
                     {
                         TableRelation = "LSC Division".Code;
@@ -145,6 +150,7 @@ report 70010 "Consignment Daily Report"
         DivisionFilter: text;
         RPGFilter: text;
         BrandFilter: text;
+        VendorFilter: text;
         StoreName: text;
         VendorName: text;
         BrandName: text;
