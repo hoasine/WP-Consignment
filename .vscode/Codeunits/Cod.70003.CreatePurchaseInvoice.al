@@ -1,4 +1,4 @@
-codeunit 70003 "Consignment - Process Invoice"
+codeunit 70003 "Consignment - Purchase Invoice"
 {
     trigger OnRun()
     begin
