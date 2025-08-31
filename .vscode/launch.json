@@ -1,4 +1,4 @@
-{
+/* {
     "version": "0.2.0",
     "configurations": [
         {
@@ -19,7 +19,7 @@
             "schemaUpdateMode": "ForceSync"
         }
     ]
-}
+} */
 
 
 // {
@@ -49,28 +49,28 @@
 // }
 
 
-// {
-//      "version": "0.2.0",
-//     "configurations": [
-//         {
-//             "name": "http://localhost",
-//             "request": "launch",
-//             "type": "al",
-//             "environmentType": "OnPrem",
-//             "server": "http://192.168.33.108:8080/tkvposprd/",
-//             "serverInstance": "tkvposprd",
-//             "port": 9049,
-//             "authentication": "UserPassword",
-//             "startupObjectId": 50150,
-//             "startupObjectType": "Page",
-//             "breakOnError": "All",
-//             "launchBrowser": true,
-//             "enableLongRunningSqlStatements": true,
-//             "enableSqlInformationDebugger": true,
-//             "tenant": "default",
-//             "usePublicURLFromServer": true,
-//             "schemaUpdateMode": "ForceSync"
-//         }
-//     ] 
+ {
+     "version": "0.2.0",
+     "configurations": [
+        {
+            "name": "http://localhost",
+            "request": "launch",
+            "type": "al",
+            "environmentType": "OnPrem",
+          "server": "http://192.168.33.108:8080/tkvposprd/",
+           "serverInstance": "tkvposprd",
+          "port": 9049,
+           "authentication": "UserPassword",
+            "startupObjectId": 50150,
+            "startupObjectType": "Page",
+            "breakOnError": "All",
+           "launchBrowser": true,
+            "enableLongRunningSqlStatements": true,
+          "enableSqlInformationDebugger": true,
+            "tenant": "default",
+          "usePublicURLFromServer": true,
+           "schemaUpdateMode": "ForceSync"
+       }
+   ] 
     
-// }
+ } 
