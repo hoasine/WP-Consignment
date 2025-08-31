@@ -1682,8 +1682,8 @@ codeunit 70000 "Consignment Util"
         end;
         */
         //  intrecalFormula := RetailSetup."Consign. Calc. Daily";
-        dtAssignMonth := CALCDATE('-1M', DMY2Date(1, Date2DMY(Today, 2), Date2DMY(Today, 3))); // 
-        dtAssignMonthEnd := CALCDATE('1M-1D', dtAssignMonth); // 
+        dtAssignMonth := CalcDate('<-CM>', Today);
+        dtAssignMonthEnd := CALCDATE('<-CM+1M-1D>', Today); // 
 
         CreateSalesInvoices(dtAssignMonth, dtAssignMonthEnd);
     end;
@@ -2448,7 +2448,7 @@ codeunit 70000 "Consignment Util"
         ConsignEntries.SetCurrentKey("Vendor No.", "Start Date");
         ConsignEntries.setrange(Status, ConsignEntries.Status::"Posted");
         ConsignEntries.setrange("Start Date", salesDate, endSalesDate);
-        ConsignEntries.SetFilter("Billing - Total Profit", '<>0');
+        // ConsignEntries.SetFilter("Billing - Total Profit", '<>0');
         if ConsignEntries.FindSet() then begin
             repeat
                 if (ConsignEntries."Start Date" >= salesDate) and (ConsignEntries."End Date" <= endSalesDate) then begin

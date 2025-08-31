@@ -9,7 +9,7 @@ codeunit 70001 "Calc. Consignment"
     begin
         Clear(ConsignmentUtil);
         ConsignmentUtil.GenerateConsignDocs();
-        ConsignmentUtil.GenerateBIDocs();
+      //  ConsignmentUtil.GenerateBIDocs();
     end;
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Reporting Triggers", 'ScheduleReport', '', false, false)]
