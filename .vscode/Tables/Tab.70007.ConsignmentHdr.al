@@ -158,7 +158,7 @@ table 70007 "Consignment Header"
             Caption = 'Billing Period ID';
             //   TableRelation = Vendor."No." where("Is Consignment Vendor" = filter(true));
             TableRelation = "WP B.Inc Billing Periods".ID;
-            ;
+
             DataClassification = ToBeClassified;
             trigger OnLookup()
             var

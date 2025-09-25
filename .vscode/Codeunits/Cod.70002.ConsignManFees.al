@@ -1,4 +1,4 @@
-codeunit 70002 ConsignSendEmails
+codeunit 70002 "Consignment - ManFees"
 {
     /*  trigger OnRun()
       begin
@@ -34,9 +34,9 @@ codeunit 70002 ConsignSendEmails
     var
         cuConsignmentUtil: Codeunit "Consignment Util";
         bp: Record "WP Counter Area";
-       
+
     begin
-            cuConsignmentUtil.CreateSIManagementFee(bp);
+        cuConsignmentUtil.CreateSIManagementFee(bp);
     end;
 
 
