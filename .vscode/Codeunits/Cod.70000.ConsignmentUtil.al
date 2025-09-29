@@ -2440,170 +2440,179 @@ codeunit 70000 "Consignment Util"
         TempConsignEntries: Record "Consignment Header" temporary;
         BillingTotalProfit: Decimal;
         ExpectedGrossProfit: Decimal;
-
+        ConsignContract: Record "WP Consignment Contracts";
+        gdiag: Dialog;
     begin
         clear(ConsignAmt);
         clear(MPGAmt);
         clear(MDRAmt);
         clear(ConsignEntries);
         Clear(TempConsignEntries);
-        ConsignEntries.Reset();
-        ConsignEntries.SetCurrentKey("Vendor No.", "Start Date");
-        ConsignEntries.setrange(Status, ConsignEntries.Status::"Posted");
-        ConsignEntries.setrange("Start Date", salesDate, endSalesDate);
-        ConsignEntries.SetFilter("Expected Gross Profit", '<>0');
-        if ConsignEntries.FindSet() then begin
+        TempConsignEntries.Reset();
+        ConsignContract.Reset();
+        ConsignContract.SetFilter("ID", '<>%1', '');
+        IF ConsignContract.FindSet() then
             repeat
-                if (ConsignEntries."Start Date" >= salesDate) and (ConsignEntries."End Date" <= endSalesDate) then begin
-                    //  ConsignEntries.CalcFields("Billing - Total Profit", "Total MDR Amount");
-                    //  ConsignAmt += ConsignEntries."Billing - Total Profit";
-                    //  MDRAmt += ConsignEntries."Total MDR Amount";
-                    BillingTotalProfit := 0;
-                    TotalMDRAmt := 0;
-                    MDRAmt := 0;
-                    be.SetRange("Contract ID", ConsignEntries."Contract ID");
-                    be.SetRange("Vendor No.", ConsignEntries."Vendor No.");
-                    //be.SetRange("Vendor No.", '100005');
-                    if be.FindSet() then
-                        repeat
-                            //Billing total profit
-                            BillingTotalProfit += be."Cost";
-                            //MDR Amt
-                            TotalMDRAmt += be."MDR Amount";
-                            //ExpectedGrossProfit
-                            if be."Expected Gross Profit" <> 0 then
-                                ExpectedGrossProfit := be."Expected Gross Profit";
-                        until be.Next() = 0;
-                    ConsignAmt := Round(BillingTotalProfit);
-                    MDRAmt := Round(TotalMDRAmt);
-                    Clear(BillableMPGAmt);
-                    BillableMPGAmt := ExpectedGrossProfit - ConsignAmt;
-                    lrecsh.Invoice := true;
 
-                    clear(LRecSH);
+                ConsignEntries.Reset();
+                ConsignEntries.SetCurrentKey("Vendor No.", "Start Date");
+                ConsignEntries.setrange(Status, ConsignEntries.Status::"Posted");
+                ConsignEntries.setrange("Start Date", salesDate, endSalesDate);
+                ConsignEntries.SetRange("Contract ID", ConsignContract.ID);
+                if ConsignEntries.FindSet() then begin
+                    ConsignEntries.SetAutoCalcFields("Total Excl. Tax", "Billing - Total Cost", "Billing - Total Profit", "Billing - Total Exc. Tax");
+                    repeat
+                        TempConsignEntries.Init();
+                        TempConsignEntries := ConsignEntries;
+                        TempConsignEntries.Insert();
+                    until ConsignEntries.Next() = 0;
+                end;
+            until ConsignContract.Next() = 0;
+
+        IF TempConsignEntries.FindSet() then begin
+            i := 0;
+            if GuiAllowed then begin
+                gdiag.Open('Working on total consigment documents:\' + Format(TempConsignEntries.Count) + '#1#########\ Records : #2########');
+                gdiag.Update(1, 'Getting  Records');
+            end;
+            BillingTotalProfit := 0;
+            TotalMDRAmt := 0;
+            MDRAmt := 0;
+            repeat
+                gdiag.Update(1, 'Inserting AP');
+                gdiag.Update(2, Format(i));
+                BillingTotalProfit := TempConsignEntries."Billing - Total Cost";
+                TotalMDRAmt := TempConsignEntries."Total MDR Amount";
+                ConsignAmt := Round(BillingTotalProfit);
+                MDRAmt := Round(TotalMDRAmt);
+                Clear(BillableMPGAmt);
+                BillableMPGAmt := TempConsignEntries."Expected Gross Profit" - ConsignAmt;
+                lrecsh.Invoice := true;
+
+                clear(LRecSH);
+                clear(LRecSL);
+                clear(LRecSLmdr);
+                LRecSH."Document Type" := LRecSH."Document Type"::Invoice;
+                LRecSH.Validate("Sell-to Customer No.", be."Vendor No.");
+                LRecSH."Document Date" := endSalesDate;
+                LRecSH."Posting Date" := endSalesDate + 5;
+                LRecSH."Your Reference" := 'CONSIGN';
+                LRecSH.Invoice := true;
+                //MGP sales invoice
+                if BillableMPGAmt > 0 then begin
                     clear(LRecSL);
                     clear(LRecSLmdr);
-                    LRecSH."Document Type" := LRecSH."Document Type"::Invoice;
-                    LRecSH.Validate("Sell-to Customer No.", be."Vendor No.");
-                    LRecSH."Document Date" := today;
-                    LRecSH."Posting Date" := today + 5;
-                    LRecSH."Your Reference" := 'CONSIGN';
-                    LRecSH.Invoice := true;
+                    if lrecsh.insert(True) then begin
 
-                    //MGP sales invoice
-                    if BillableMPGAmt > 0 then begin
-                        clear(LRecSL);
-                        clear(LRecSLmdr);
-                        if lrecsh.insert(True) then begin
-
-                            //if BillableMPGAmt > 0 then begin
-                            SINo := lrecsh."No.";
-                            lrecSh.validate("Document Date");
-                            LRecSH.Validate("Posting Date");
-                            if RetailSetup."Def. Shortcut Dim. 1 - Sales" <> '' then
-                                LRecSH.Validate("Shortcut Dimension 1 Code", RetailSetup."Def. Shortcut Dim. 1 - Sales");
-                            LRecSH.Modify();
+                        //if BillableMPGAmt > 0 then begin
+                        SINo := lrecsh."No.";
+                        lrecSh.validate("Document Date");
+                        LRecSH.Validate("Posting Date");
+                        if RetailSetup."Def. Shortcut Dim. 1 - Sales" <> '' then
+                            LRecSH.Validate("Shortcut Dimension 1 Code", RetailSetup."Def. Shortcut Dim. 1 - Sales");
+                        LRecSH.Modify();
 
 
-                            LRecSL."Document Type" := LRecSL."Document Type"::Invoice;
-                            LRecSL.Validate("Document No.", SINo);
-                            LRecSL."Line No." := 100;
-                            lrecsl.Description := 'Total Profit Amt : ' + format(ConsignAmt);
-                            lrecsl.insert;
+                        LRecSL."Document Type" := LRecSL."Document Type"::Invoice;
+                        LRecSL.Validate("Document No.", SINo);
+                        LRecSL."Line No." := 100;
+                        lrecsl.Description := 'Total Profit Amt : ' + format(ConsignAmt);
+                        lrecsl.insert;
 
-                            LRecSL."Line No." := 200;
-                            lrecsl.Description := 'Min. Prof. Grtee : ' + format(ExpectedGrossProfit);
-                            lrecsl.insert;
+                        LRecSL."Line No." := 200;
+                        lrecsl.Description := 'Min. Prof. Grtee : ' + format(ExpectedGrossProfit);
+                        lrecsl.insert;
 
-                            LRecSL."Line No." := 300;
-                            lrecsl.Description := 'Billable Amt : ' + format(BillableMPGAmt);
-                            lrecsl.insert;
+                        LRecSL."Line No." := 300;
+                        lrecsl.Description := 'Billable Amt : ' + format(BillableMPGAmt);
+                        lrecsl.insert;
 
-                            LRecSL."Line No." := 400;
-                            lrecsl.Description := 'MDR Amt : ' + format(MDRAmt);
-                            lrecsl.insert;
+                        LRecSL."Line No." := 400;
+                        lrecsl.Description := 'MDR Amt : ' + format(MDRAmt);
+                        lrecsl.insert;
 
-                            LRecSL."Line No." := 1000;
-                            lrecsl.Type := lrecsl.Type::"G/L Account";
-                            lrecsl.validate("No.", '51186');
-                            lrecsl.validate("Gen. Bus. Posting Group", 'LOCAL');
-                            lrecsl.validate("Gen. Prod. Posting Group", 'RETAIL');
-                            lrecsl.validate("Location Code", MPGSetup."Store No.");
-                            lrecsl.validate("VAT Bus. Posting Group", 'DOMESTIC_OUT');
-                            lrecsl.validate("VAT Prod. Posting Group", 'VAT_INC_10');
-                            lrecsl.validate("Location Code", MPGSetup."Store No.");
-                            lrecsl.validate(Quantity, 1);
-                            lrecsl.validate("Unit Price", BillableMPGAmt);
-                            lrecsl.Description := 'Doanh thu bổ sung tháng ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3)));
-                            lrecsl."Description 2" := '';
-                            recStore.Reset();
-                            recStore.SetCurrentKey("Location Code");
-                            recStore.SetRange("Location Code", LRecSL."Location Code");
-                            if recStore.FindFirst() then
-                                LRecSL.Validate("Shortcut Dimension 1 Code", recStore."Global Dimension 1 Code")
-                            else
-                                LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
-                            lrecsl.insert(true);
-                        end;
-                    end;
-                    //MDR fee : sales invoices
-                    if ABS(MDRAmt) > 0 then begin
-                        if lrecsh.insert(True) then begin
-
-                            // if MDRAmt > 0 then begin
-                            SINo := lrecsh."No.";
-                            lrecsh.validate("Document Date");
-                            lrecsh.Validate("Posting Date");
-                            if RetailSetup."Def. Shortcut Dim. 1 - Sales" <> '' then
-                                lrecsh.Validate("Shortcut Dimension 1 Code", RetailSetup."Def. Shortcut Dim. 1 - Sales");
-                            lrecsh.Modify();
-
-                            clear(LRecSL);
-                            clear(LRecSLmdr);
-                            LRecSLmdr."Document Type" := LRecSLmdr."Document Type"::Invoice;
-                            LRecSLmdr.Validate("Document No.", SINo);
-                            LRecSLmdr."Line No." := 100;
-                            lrecslmdr.Description := 'Total Con.Amt : ' + format(ConsignAmt);
-                            lrecslmdr.insert;
-
-                            LRecSLmdr."Line No." := 200;
-                            lrecslmdr.Description := 'Min. Prof. Grtee : ' + format(ExpectedGrossProfit);
-                            lrecslmdr.insert;
-
-                            LRecSLmdr."Line No." := 300;
-                            lrecslmdr.Description := 'Billable Amt : ' + format(BillableMPGAmt);
-                            lrecslmdr.insert;
-
-                            LRecSLmdr."Line No." := 400;
-                            lrecslmdr.Description := 'MDR Amt : ' + format(MDRAmt);
-                            lrecslmdr.insert;
-
-                            LRecSLmdr."Line No." := 2000;
-                            lrecslmdr.Type := lrecslmdr.Type::"G/L Account";
-                            lrecslmdr.validate("No.", '51181');
-                            lrecslmdr.validate("Gen. Bus. Posting Group", 'LOCAL');
-                            lrecslmdr.validate("Gen. Prod. Posting Group", 'RETAIL');
-                            lrecslmdr.validate("Location Code", MPGSetup."Store No.");
-                            lrecslmdr.validate("VAT Bus. Posting Group", 'DOMESTIC_OUT');
-                            lrecslmdr.validate("VAT Prod. Posting Group", 'VAT_INC_10');
-                            lrecslmdr.validate(Quantity, 1);
-                            lrecslmdr.validate("Unit Price", ABS(MDRAmt));
-                            lrecslmdr.Description := 'Phí giao dịch thẻ ';
-                            lrecslmdr."Description 2" := Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3)));
-                            recStore.Reset();
-                            recStore.SetCurrentKey("Location Code");
-                            recStore.SetRange("Location Code", LRecSLmdr."Location Code");
-                            if recStore.FindFirst() then
-                                LRecSLmdr.Validate("Shortcut Dimension 1 Code", recStore."Global Dimension 1 Code")
-                            else
-                                LRecSLmdr.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
-                            lrecslmdr.insert(true);
-                        end;
+                        LRecSL."Line No." := 1000;
+                        lrecsl.Type := lrecsl.Type::"G/L Account";
+                        lrecsl.validate("No.", '51186');
+                        lrecsl.validate("Gen. Bus. Posting Group", 'LOCAL');
+                        lrecsl.validate("Gen. Prod. Posting Group", 'RETAIL');
+                        lrecsl.validate("Location Code", MPGSetup."Store No.");
+                        lrecsl.validate("VAT Bus. Posting Group", 'DOMESTIC_OUT');
+                        lrecsl.validate("VAT Prod. Posting Group", 'VAT_INC_10');
+                        lrecsl.validate("Location Code", MPGSetup."Store No.");
+                        lrecsl.validate(Quantity, 1);
+                        lrecsl.validate("Unit Price", BillableMPGAmt);
+                        lrecsl.Description := 'Doanh thu bổ sung tháng ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3)));
+                        lrecsl."Description 2" := '';
+                        recStore.Reset();
+                        recStore.SetCurrentKey("Location Code");
+                        recStore.SetRange("Location Code", LRecSL."Location Code");
+                        if recStore.FindFirst() then
+                            LRecSL.Validate("Shortcut Dimension 1 Code", recStore."Global Dimension 1 Code")
+                        else
+                            LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
+                        lrecsl.insert(true);
                     end;
                 end;
-            until ConsignEntries.Next() = 0;
+                //MDR fee : sales invoices
+                if ABS(MDRAmt) > 0 then begin
+                    if lrecsh.insert(True) then begin
+
+                        // if MDRAmt > 0 then begin
+                        SINo := lrecsh."No.";
+                        lrecsh.validate("Document Date");
+                        lrecsh.Validate("Posting Date");
+                        if RetailSetup."Def. Shortcut Dim. 1 - Sales" <> '' then
+                            lrecsh.Validate("Shortcut Dimension 1 Code", RetailSetup."Def. Shortcut Dim. 1 - Sales");
+                        lrecsh.Modify();
+
+                        clear(LRecSL);
+                        clear(LRecSLmdr);
+                        LRecSLmdr."Document Type" := LRecSLmdr."Document Type"::Invoice;
+                        LRecSLmdr.Validate("Document No.", SINo);
+                        LRecSLmdr."Line No." := 100;
+                        lrecslmdr.Description := 'Total Con.Amt : ' + format(ConsignAmt);
+                        lrecslmdr.insert;
+
+                        LRecSLmdr."Line No." := 200;
+                        lrecslmdr.Description := 'Min. Prof. Grtee : ' + format(ExpectedGrossProfit);
+                        lrecslmdr.insert;
+
+                        LRecSLmdr."Line No." := 300;
+                        lrecslmdr.Description := 'Billable Amt : ' + format(BillableMPGAmt);
+                        lrecslmdr.insert;
+
+                        LRecSLmdr."Line No." := 400;
+                        lrecslmdr.Description := 'MDR Amt : ' + format(MDRAmt);
+                        lrecslmdr.insert;
+
+                        LRecSLmdr."Line No." := 2000;
+                        lrecslmdr.Type := lrecslmdr.Type::"G/L Account";
+                        lrecslmdr.validate("No.", '51181');
+                        lrecslmdr.validate("Gen. Bus. Posting Group", 'LOCAL');
+                        lrecslmdr.validate("Gen. Prod. Posting Group", 'RETAIL');
+                        lrecslmdr.validate("Location Code", MPGSetup."Store No.");
+                        lrecslmdr.validate("VAT Bus. Posting Group", 'DOMESTIC_OUT');
+                        lrecslmdr.validate("VAT Prod. Posting Group", 'VAT_INC_10');
+                        lrecslmdr.validate(Quantity, 1);
+                        lrecslmdr.validate("Unit Price", ABS(MDRAmt));
+                        lrecslmdr.Description := 'Phí giao dịch thẻ ';
+                        lrecslmdr."Description 2" := Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3)));
+                        recStore.Reset();
+                        recStore.SetCurrentKey("Location Code");
+                        recStore.SetRange("Location Code", LRecSLmdr."Location Code");
+                        if recStore.FindFirst() then
+                            LRecSLmdr.Validate("Shortcut Dimension 1 Code", recStore."Global Dimension 1 Code")
+                        else
+                            LRecSLmdr.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
+                        lrecslmdr.insert(true);
+                    end;
+                end;
+                i += 1;
+
+            until TempConsignEntries.Next() = 0;
         end;
-        Clear(TempConsignEntries);
+
 
 
     end;
