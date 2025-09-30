@@ -23,7 +23,7 @@
    ] 
 } */
 
-{
+/* {
     "version": "0.2.0",
     "configurations": [
         {
@@ -34,6 +34,29 @@
             "environmentType": "OnPrem",
             "request": "launch",
             "port": 7149,
+            "authentication": "UserPassword",
+            "startupObjectId": 22,
+            "startupObjectType": "Page",
+            "breakOnError": "All",
+            "launchBrowser": true,
+            "enableLongRunningSqlStatements": true,
+            "enableSqlInformationDebugger": true,
+            "schemaUpdateMode": "ForceSync"
+        }
+    ]
+} */
+
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "http://localhost",          
+           "server": "http://192.160.1.178:8080/BC240/",
+            "serverInstance": "BC240",
+            "type": "al",
+            "environmentType": "OnPrem",
+            "request": "launch",
+            "port": 7049,
             "authentication": "UserPassword",
             "startupObjectId": 22,
             "startupObjectType": "Page",

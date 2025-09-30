@@ -2451,6 +2451,8 @@ codeunit 70000 "Consignment Util"
         TempConsignEntries.Reset();
         ConsignContract.Reset();
         ConsignContract.SetFilter("ID", '<>%1', '');
+        ConsignContract.SetFilter("End Date", '>=%1', endSalesDate);
+        ConsignContract.SetRange("ID", 'CA1112_2024_MD_B2');
         IF ConsignContract.FindSet() then
             repeat
 
@@ -2493,7 +2495,7 @@ codeunit 70000 "Consignment Util"
                 clear(LRecSL);
                 clear(LRecSLmdr);
                 LRecSH."Document Type" := LRecSH."Document Type"::Invoice;
-                LRecSH.Validate("Sell-to Customer No.", be."Vendor No.");
+                LRecSH.Validate("Sell-to Customer No.", TempConsignEntries."Vendor No.");
                 LRecSH."Document Date" := endSalesDate;
                 LRecSH."Posting Date" := endSalesDate + 5;
                 LRecSH."Your Reference" := 'CONSIGN';
