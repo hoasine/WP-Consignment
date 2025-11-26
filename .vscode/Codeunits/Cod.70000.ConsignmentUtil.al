@@ -2441,7 +2441,12 @@ codeunit 70000 "Consignment Util"
         BillingTotalProfit: Decimal;
         ExpectedGrossProfit: Decimal;
         ConsignContract: Record "WP Consignment Contracts";
+        TempBE: record "Consignment Billing Entries" temporary;
         gdiag: Dialog;
+        VendorNo: Code[20];
+        StoreNo: Code[20];
+        LineNo: Integer;
+
     begin
         clear(ConsignAmt);
         clear(MPGAmt);
@@ -2449,53 +2454,84 @@ codeunit 70000 "Consignment Util"
         clear(ConsignEntries);
         Clear(TempConsignEntries);
         TempConsignEntries.Reset();
-        ConsignContract.Reset();
-        ConsignContract.SetFilter("ID", '<>%1', '');
-        ConsignContract.SetFilter("End Date", '>=%1', endSalesDate);
-        ConsignContract.SetRange("ID", 'CA1112_2024_MD_B2');
-        IF ConsignContract.FindSet() then
+        LineNo := 0;
+        TempBE.Reset();
+        TempBE.DeleteAll();
+        TempConsignEntries.Reset();
+        TempConsignEntries.DeleteAll();
+        ConsignEntries.Reset();
+        ConsignEntries.setrange(Status, ConsignEntries.Status::"Posted");
+        ConsignEntries.SetFilter("Start Date", '>=%1', salesDate);
+        ConsignEntries.SetFilter("End Date", '<=%1', endSalesDate);
+        if ConsignEntries.FindSet() then begin
             repeat
+                be.Reset();
+                be.SetRange("Document No.", ConsignEntries."Document No.");
 
-                ConsignEntries.Reset();
-                ConsignEntries.SetCurrentKey("Vendor No.", "Start Date");
-                ConsignEntries.setrange(Status, ConsignEntries.Status::"Posted");
-                ConsignEntries.setrange("Start Date", salesDate, endSalesDate);
-                ConsignEntries.SetRange("Contract ID", ConsignContract.ID);
-                if ConsignEntries.FindSet() then begin
-                    ConsignEntries.SetAutoCalcFields("Total Excl. Tax", "Billing - Total Cost", "Billing - Total Profit", "Billing - Total Exc. Tax");
+                if be.FindSet() then begin
                     repeat
-                        TempConsignEntries.Init();
-                        TempConsignEntries := ConsignEntries;
-                        TempConsignEntries.Insert();
-                    until ConsignEntries.Next() = 0;
-                end;
-            until ConsignContract.Next() = 0;
+                        //to get distinct contract ids only
+                        TempConsignEntries.Reset();
+                        TempConsignEntries.SetRange("Contract ID", be."Contract ID");
+                        if not TempConsignEntries.FindFirst() then begin
+                            LineNo += 1;
+                            TempConsignEntries.Init();
+                            TempConsignEntries."Document No." := 'TempConsig' + Format(LineNo + 1);
+                            TempConsignEntries."Vendor No." := be."Vendor No.";
+                            TempConsignEntries."Contract ID" := be."Contract ID";
+                            TempConsignEntries."Store No." := be."Store No.";
+                            TempConsignEntries."Billing - Total Profit" := 0;
+                            TempConsignEntries."Total MDR Amount" := 0;
+                            if be."Expected Gross Profit" <> 0 then
+                                TempConsignEntries."Expected Gross Profit" := be."Expected Gross Profit"
+                            else
+                                TempConsignEntries."Expected Gross Profit" := 0;
+                            TempConsignEntries.Insert();
+                            TempConsignEntries."Billing - Total Profit" := be.Profit;
+                            TempConsignEntries."Total MDR Amount" := be."MDR Amount";
+                            TempConsignEntries.Modify(true);
+                        end else begin
+                            TempConsignEntries."Billing - Total Profit" := TempConsignEntries."Billing - Total Profit" + be.Profit;
+                            TempConsignEntries."Total MDR Amount" := TempConsignEntries."Total MDR Amount" + be."MDR Amount";
+                            if be."Expected Gross Profit" <> 0 then
+                                TempConsignEntries."Expected Gross Profit" := be."Expected Gross Profit";
+                            TempConsignEntries.Modify(true);
+                        end;
 
-        IF TempConsignEntries.FindSet() then begin
-            i := 0;
-            if GuiAllowed then begin
-                gdiag.Open('Working on total consigment documents:\' + Format(TempConsignEntries.Count) + '#1#########\ Records : #2########');
-                gdiag.Update(1, 'Getting  Records');
-            end;
-            BillingTotalProfit := 0;
-            TotalMDRAmt := 0;
-            MDRAmt := 0;
+                    until be.Next() = 0;
+                end;
+            until ConsignEntries.Next() = 0;
+        end;
+
+        TempConsignEntries.Reset();
+        if TempConsignEntries.FindSet() then begin
+            gdiag.Open('Working on total consigments:\' + Format(TempConsignEntries.Count) + '#1#########\ Records : #2########');
+            gdiag.Update(1, 'Getting  Records');
             repeat
-                gdiag.Update(1, 'Inserting AP');
+                gdiag.Update(1, 'Inserting to MGP Sales Invoice');
                 gdiag.Update(2, Format(i));
-                BillingTotalProfit := TempConsignEntries."Billing - Total Cost";
+
+                BillingTotalProfit := 0;
+                TotalMDRAmt := 0;
+                MDRAmt := 0;
+                BillableMPGAmt := 0;
+                ExpectedGrossProfit := 0;
+                ConsignAmt := 0;
+                MPGAmt := 0;
+                VendorNo := TempConsignEntries."Vendor No.";
+                StoreNo := TempConsignEntries."Store No.";
+                ExpectedGrossProfit := TempConsignEntries."Expected Gross Profit";
+                BillingTotalProfit := TempConsignEntries."Billing - Total Profit";
                 TotalMDRAmt := TempConsignEntries."Total MDR Amount";
                 ConsignAmt := Round(BillingTotalProfit);
                 MDRAmt := Round(TotalMDRAmt);
-                Clear(BillableMPGAmt);
-                BillableMPGAmt := TempConsignEntries."Expected Gross Profit" - ConsignAmt;
-                lrecsh.Invoice := true;
+                BillableMPGAmt := ExpectedGrossProfit - ConsignAmt;
 
                 clear(LRecSH);
                 clear(LRecSL);
                 clear(LRecSLmdr);
                 LRecSH."Document Type" := LRecSH."Document Type"::Invoice;
-                LRecSH.Validate("Sell-to Customer No.", TempConsignEntries."Vendor No.");
+                LRecSH.Validate("Sell-to Customer No.", VendorNo);
                 LRecSH."Document Date" := endSalesDate;
                 LRecSH."Posting Date" := endSalesDate + 5;
                 LRecSH."Your Reference" := 'CONSIGN';
@@ -2538,10 +2574,9 @@ codeunit 70000 "Consignment Util"
                         lrecsl.validate("No.", '51186');
                         lrecsl.validate("Gen. Bus. Posting Group", 'LOCAL');
                         lrecsl.validate("Gen. Prod. Posting Group", 'RETAIL');
-                        lrecsl.validate("Location Code", MPGSetup."Store No.");
+                        lrecsl.validate("Location Code", StoreNo);
                         lrecsl.validate("VAT Bus. Posting Group", 'DOMESTIC_OUT');
                         lrecsl.validate("VAT Prod. Posting Group", 'VAT_INC_10');
-                        lrecsl.validate("Location Code", MPGSetup."Store No.");
                         lrecsl.validate(Quantity, 1);
                         lrecsl.validate("Unit Price", BillableMPGAmt);
                         lrecsl.Description := 'Doanh thu bổ sung tháng ' + Format(FORMAT(DATE2DMY(TODAY, 2)) + '-' + FORMAT(DATE2DMY(TODAY, 3)));
@@ -2555,6 +2590,7 @@ codeunit 70000 "Consignment Util"
                             LRecSL.Validate("Shortcut Dimension 1 Code", LRecSH."Shortcut Dimension 1 Code"); //20240123-+
                         lrecsl.insert(true);
                     end;
+
                 end;
                 //MDR fee : sales invoices
                 if ABS(MDRAmt) > 0 then begin
@@ -2593,7 +2629,7 @@ codeunit 70000 "Consignment Util"
                         lrecslmdr.validate("No.", '51181');
                         lrecslmdr.validate("Gen. Bus. Posting Group", 'LOCAL');
                         lrecslmdr.validate("Gen. Prod. Posting Group", 'RETAIL');
-                        lrecslmdr.validate("Location Code", MPGSetup."Store No.");
+                        lrecslmdr.validate("Location Code", StoreNo);
                         lrecslmdr.validate("VAT Bus. Posting Group", 'DOMESTIC_OUT');
                         lrecslmdr.validate("VAT Prod. Posting Group", 'VAT_INC_10');
                         lrecslmdr.validate(Quantity, 1);
@@ -2610,12 +2646,11 @@ codeunit 70000 "Consignment Util"
                         lrecslmdr.insert(true);
                     end;
                 end;
-                i += 1;
-
+                i := i + 1;
             until TempConsignEntries.Next() = 0;
         end;
-
-
+        IF GuiAllowed() then
+            gdiag.Close();
 
     end;
 
