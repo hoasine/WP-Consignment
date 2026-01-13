@@ -2,7 +2,7 @@
   "id": "02fda112-9381-4973-88c4-c92c3a6f340f",
   "name": "worldPOS-Consignment",
   "publisher": "World POS Sdn. Bhd.",
-  "version": "24.1.0.71",
+  "version": "24.1.0.83",
   "description": "Consignment Management",
   "privacyStatement": "",
   "EULA": "",
@@ -21,6 +21,12 @@
       "publisher": "World POS Sdn. Bhd.",
       "name": "worldPOS-StaffAllowance",
       "version": "1.0.0.26"
+    },
+    {
+      "id": "da447427-42de-4320-bf10-9930392c9768",
+      "publisher": "World POS Sdn. Bhd.",
+      "name": "Be One Solutions",
+      "version": "1.0.0.20"
     }
   ],
   "screenshots": [],

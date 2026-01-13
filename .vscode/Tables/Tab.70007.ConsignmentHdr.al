@@ -21,6 +21,11 @@ table 70007 "Consignment Header"
                 end;
             end;
         }
+        field(84; "Store No."; code[20])
+        {
+            Caption = 'Store No.';
+            DataClassification = ToBeClassified;
+        }
         field(2; "Vendor No."; Code[50])
         {
             Caption = 'Vendor No.';

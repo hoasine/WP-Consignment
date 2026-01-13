@@ -135,5 +135,6 @@ table 70008 "Consignment Billing Entries"
         {
             Clustered = true;
         }
+
     }
 }

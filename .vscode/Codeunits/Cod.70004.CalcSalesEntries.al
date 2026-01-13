@@ -71,13 +71,13 @@ codeunit 70004 "Calculate Sales Entries"
         dtassignDate := Today;
 
         if RetailSetup."Consignment Calc. Cycle" = RetailSetup."Consignment Calc. Cycle"::Daily then begin
-            for i := 1 to intdateFormula do begin
-                txtDateFormula := '-' + Format(i) + 'D';
-                salesDate := CalcDate(txtDateFormula, dtassignDate);
-                CopySalesData2(salesDate, salesDate, RetailSetup."Consignment Calc. Cycle");
-                //MoveConsignmentRateBlank(Format(salesDate, 0, '<Year4><Month,2><Day,2>'));
-                //Commit();
-            end;
+            // for i := 1 to intdateFormula do begin
+            txtDateFormula := '-' + Format(intdateFormula) + 'D';
+            salesDate := CalcDate(txtDateFormula, dtassignDate);
+            CopySalesData2(salesDate, salesDate, RetailSetup."Consignment Calc. Cycle");
+            //MoveConsignmentRateBlank(Format(salesDate, 0, '<Year4><Month,2><Day,2>'));
+            //Commit();
+            //  end;
         end;
 
     end;
