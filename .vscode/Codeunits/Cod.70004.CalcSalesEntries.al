@@ -399,17 +399,19 @@ codeunit 70004 "Calculate Sales Entries"
                                                                                                                                           //POSSales."Net Price Incl Tax" := SalesEntry.Price - SalesEntry."Discount Amount" / POSSales.Quantity; //20210104
                                         POSSales."Net Price Incl Tax" := -(SalesEntry."Net Amount" + SalesEntry."VAT Amount") / POSSales.Quantity; //Exclude allowance
                                     end;
-
                                     if (POSSales.Quantity <> 0) then
-                                        POSSales."VAT per unit" := -(POSSales."VAT Amount" / POSSales.Quantity);
+                                        POSSales."VAT per unit" := -(POSSales."VAT Amount" / POSSales.Quantity)
+                                    else
+                                        POSSales."VAT per unit" := 0;
 
                                     //POSSales."Total Incl Tax" := -(POSSales."Net Price Incl Tax" * SalesEntry.Quantity);
                                     POSSales."Total Incl Tax" := -(POSSales."Net Price Incl Tax" * SalesEntry.Quantity); //Exclude allowance
                                     possales."Total Excl Tax" := -POSSales."Net Amount"; //UAT-025 :No8.RGV_Payment Notice //Exclude allowance
 
                                     if (POSSales.Quantity <> 0) then
-                                        POSSales.Tax := -(POSSales."VAT Amount" / POSSales.Quantity);
-
+                                        POSSales.Tax := -(POSSales."VAT Amount" / POSSales.Quantity)
+                                    else
+                                        POSSales.Tax := 0;
                                     POSSales."Total Tax Collected" := POSSales."VAT Amount";
                                     if POSSales.Quantity <> 0 then
                                         POSSales."Net Price Excl Tax" := POSSales."Total Excl Tax" / POSSales.Quantity; //20201224
