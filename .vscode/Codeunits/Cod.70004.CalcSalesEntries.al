@@ -119,6 +119,18 @@ codeunit 70004 "Calculate Sales Entries"
         end;
     end;
 
+    procedure GetPurchaseVat(VatProductCode: Code[20]): Decimal
+    var
+        VATPostingSetup: Record "VAT Posting Setup";
+        VatBusPostingCode: Code[20];
+    begin
+        VatBusPostingCode := 'DOMESTIC_IN';
+        VATPostingSetup.SetRange("VAT Bus. Posting Group", VatBusPostingCode);
+        VATPostingSetup.SetFilter("VAT Prod. Posting Group", '=%1', VatProductCode);
+        if VATPostingSetup.FindFirst() then
+            exit(VATPostingSetup."VAT %");
+    end;
+
     procedure CopySalesData2(pSalesDate: Date; pSalesDateEnd: Date; pCycle: Enum "Consignment Calc. Cycle")
     var
         TransHeader: Record "LSC Transaction Header";
@@ -139,7 +151,6 @@ codeunit 70004 "Calculate Sales Entries"
         CostPerUnit: Decimal;
         ConsignGroup: text[250];//20200923
         StoreVendor: code[20];//20201002
-        POSVAT: Record "LSC POS VAT Code";
         i: Integer; //20210705
         gdiag: Dialog; //20210705
         //recCS: record "Consignment Setup";
@@ -157,6 +168,9 @@ codeunit 70004 "Calculate Sales Entries"
         Item: Record item;
         VendorItem: Record "Vendor";
         BE: Record "WP MPG Setup";
+        VATPercent: Decimal;
+        POSVatCode: Record "LSC POS VAT Code";
+        VatCode: Code[10];
     begin
         if pCycle = pCycle::Daily then
             docNo := Format(pSalesDate, 0, '<Year4><Month,2><Day,2>')
@@ -169,19 +183,6 @@ codeunit 70004 "Calculate Sales Entries"
         POSSales.SetRange("Date", pSalesDate, pSalesDateEnd);
         if not POSSales.IsEmpty then
             POSSales.DeleteAll();
-
-        // Missingsales.Reset();
-        // Missingsales.SetFilter("Document No.", docNo);
-        // if not Missingsales.IsEmpty then
-        //     Missingsales.DeleteAll();
-
-        // ConsignHdr.Reset();
-        // ConsignHdr.SetRange("Document No.", docNo);
-        // if not ConsignHdr.FindFirst() then begin
-        //     ConsignHdr."Document No." := docNo;
-        //     ConsignHdr.Insert(true);
-        // end else
-        //     ConsignHdr.Modify(true);
 
         i := 0;
 
@@ -233,26 +234,15 @@ codeunit 70004 "Calculate Sales Entries"
                             ConsignRate.Reset();
                             ConsignRate.SetRange("Vendor No.", Item."Vendor No.");
                             ConsignRate.SetRange("Item No.", SalesEntry."Item No.");
-                            clear(POSVAT);
-                            POSVAT.reset;
-                            IF POSVAT.Get(SalesEntry."VAT Code") then;
-                            /*  IF (SalesEntry."wp Member Disc. %" <> 0) OR (SalesEntry."wp Staff Disc. %" <> 0) then begin
-                                  SalesEntry."Discount Amount" := SalesEntry."Discount Amount" - (SalesEntry."wp Member Disc. Amount" + SalesEntry."wp Staff Disc. Amount");
-                                  SalesEntry."Discount %" := ROUND((SalesEntry."Discount Amount" / SalesEntry.Price * 100), 1);
-                                  IF SalesEntry."Total Rounded Amt." < 0 then begin
-                                      SalesEntry."Total Rounded Amt." := SalesEntry."Total Rounded Amt." - (SalesEntry."wp Member Disc. Amount" + SalesEntry."wp Staff Disc. Amount");
-                                      SalesEntry."Net Amount" := ROUND((SalesEntry."Total Rounded Amt.") / (1 + POSVAT."VAT %" / 100), 1);
-                                      SalesEntry."VAT Amount" := SalesEntry."Total Rounded Amt." - SalesEntry."Net Amount";
-
-                                  end else begin
-                                      SalesEntry."Total Rounded Amt." := SalesEntry."Total Rounded Amt." - (SalesEntry."wp Member Disc. Amount" + SalesEntry."wp Staff Disc. Amount");
-                                      SalesEntry."Net Amount" := ROUND((SalesEntry."Total Rounded Amt.") / (1 + POSVAT."VAT %" / 100), 1);
-                                      SalesEntry."VAT Amount" := SalesEntry."Total Rounded Amt." - SalesEntry."Net Amount";
-                                  end;
-
-
-                              end;*/
-                            //ConsignRate.SetRange("Consignment Type", pPosSales."Consignment Type");
+                            //Get VAT Percent
+                            VATPercent := 0;
+                            VATPercent := GetPurchaseVat(SalesEntry."VAT Prod. Posting Group");
+                            POSVatCode.Reset();
+                            POSVATCode.SetCurrentKey("VAT %");
+                            POSVATCode.SetFilter("VAT %", '=%1', VATPercent);
+                            if POSVATCode.FindFirst() then
+                                VatCode := POSVATCode."VAT Code";
+                            //end Get VAT Percent
                             ConsignRate.SetRange("Store No.", SalesEntry."Store No.");
                             ConsignRate.SetFilter("Start Date", '<=%1', SalesEntry."Date");
                             ConsignRate.SetFilter("End Date", '>=%1', SalesEntry."Date");
@@ -311,10 +301,6 @@ codeunit 70004 "Calculate Sales Entries"
                                             POSSales."Barcode No." := Barc."Barcode No.";
                                     end;
 
-                                    clear(POSVAT);
-                                    POSVAT.reset;
-                                    if POSVAT.Get(SalesEntry."VAT Code") then;
-
                                     POSSales.Quantity := -SalesEntry.Quantity;
                                     POSSales.Price := SalesEntry.Price;
                                     POSSales.UOM := SalesEntry."Unit of Measure";
@@ -322,11 +308,23 @@ codeunit 70004 "Calculate Sales Entries"
                                     POSSales."VAT Amount" := -SalesEntry."VAT Amount"; //Exclude allowance
 
                                     //UAT-025: Fix Tax Rate always is 0 
-                                    POSSales."Tax Rate" := POSVAT."VAT %";
+                                    If VATPercent <> 0 Then begin
+                                        POSSales."Tax Rate" := VATPercent;
+                                        POSSales."Net Amount" := -SalesEntry."Net Amount"; //Exclude allowance
+                                        POSSales."VAT Amount" := -SalesEntry."VAT Amount"; //Exclude allowance
+                                        POSSales."Discount Amount" := SalesEntry."Discount Amount" / ((100 + VATPercent) / 100); //Exclude allowance
+                                        POSSales."VAT Code" := SalesEntry."VAT Code";
+                                    end
+                                    Else if VATPercent = 0 then begin
+                                        POSSales."Tax Rate" := 0;
+                                        POSSales."Net Amount" := -SalesEntry."Net Amount" - SalesEntry."VAT Amount"; //Exclude allowance
+                                        POSSales."VAT Amount" := 0; //Exclude allowance
+                                        POSSales."Discount Amount" := SalesEntry."Discount Amount" / ((100 + VATPercent) / 100);
+                                        POSSales."VAT Code" := SalesEntry."VAT Code";
+                                    end;
                                     POSSales."VAT Prod. Posting Group" := SalesEntry."VAT Prod. Posting Group";
                                     //end UAT-025
                                     //POSSales."Discount Amount" := ((100 - posvat."VAT %") / 100) * SalesEntry."Discount Amount";
-                                    POSSales."Discount Amount" := SalesEntry."Discount Amount" / ((100 + POSVAT."VAT %") / 100); //Exclude allowance
                                     POSSales."Promotion No." := SalesEntry."Promotion No.";
                                     POSSales."Periodic Disc. Type" := SalesEntry."Periodic Disc. Type";
                                     POSSales."Periodic Offer No." := SalesEntry."Periodic Disc. Group";
@@ -349,7 +347,6 @@ codeunit 70004 "Calculate Sales Entries"
                                     end;
 
                                     POSSales."Periodic Discount Amount" := SalesEntry."Periodic Discount";
-                                    POSSales."VAT Code" := SalesEntry."VAT Code";
                                     POSSales."Return No Sales" := SalesEntry."Return No Sale";
                                     POSSales."Cost Amount" := -SalesEntry."Cost Amount";
                                     POSSales."USER SID" := USERSECURITYID;
@@ -403,22 +400,22 @@ codeunit 70004 "Calculate Sales Entries"
                                         POSSales."Net Price Incl Tax" := -(SalesEntry."Net Amount" + SalesEntry."VAT Amount") / POSSales.Quantity; //Exclude allowance
                                     end;
 
-                                    if (SalesEntry."VAT Amount" <> 0) and (SalesEntry.Quantity <> 0) then
-                                        POSSales."VAT per unit" := -(SalesEntry."VAT Amount" / SalesEntry.Quantity);
+                                    if (POSSales.Quantity <> 0) then
+                                        POSSales."VAT per unit" := -(POSSales."VAT Amount" / POSSales.Quantity);
 
                                     //POSSales."Total Incl Tax" := -(POSSales."Net Price Incl Tax" * SalesEntry.Quantity);
                                     POSSales."Total Incl Tax" := -(POSSales."Net Price Incl Tax" * SalesEntry.Quantity); //Exclude allowance
-                                    possales."Total Excl Tax" := -SalesEntry."Net Amount"; //UAT-025 :No8.RGV_Payment Notice //Exclude allowance
+                                    possales."Total Excl Tax" := -POSSales."Net Amount"; //UAT-025 :No8.RGV_Payment Notice //Exclude allowance
 
-                                    if (SalesEntry."VAT Amount" <> 0) and (SalesEntry.Quantity <> 0) then
-                                        POSSales.Tax := -(SalesEntry."VAT Amount" / SalesEntry.Quantity);
+                                    if (POSSales.Quantity <> 0) then
+                                        POSSales.Tax := -(POSSales."VAT Amount" / POSSales.Quantity);
 
-                                    POSSales."Total Tax Collected" := SalesEntry."VAT Amount";
+                                    POSSales."Total Tax Collected" := POSSales."VAT Amount";
                                     if POSSales.Quantity <> 0 then
                                         POSSales."Net Price Excl Tax" := POSSales."Total Excl Tax" / POSSales.Quantity; //20201224
 
                                     POSSales.Cost := POSSales."Net Amount" - POSSales."Consignment Amount"; ///Consign Cost
-                                    POSSales."Cost Incl Tax" := POSSales.Cost + ((POSSales.Cost * POSVAT."VAT %") / 100); //UAT-025:Cost Inc Tax :=No9+No.11
+                                    POSSales."Cost Incl Tax" := POSSales.Cost + ((POSSales.Cost * VATPercent) / 100); //UAT-025:Cost Inc Tax :=No9+No.11
                                     getNewMDR(SalesEntry, possales."MDR Rate", possales."MDR Weight", possales."MDR Amount");
                                     POSSales."MDR Rate Pctg" := possales."MDR Rate" * 100;
                                     POSSales.insert;
