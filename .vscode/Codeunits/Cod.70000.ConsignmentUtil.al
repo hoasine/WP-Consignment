@@ -2081,6 +2081,12 @@ codeunit 70000 "Consignment Util"
     end;
  */
 
+    [EventSubscriber(ObjectType::Table, Database::"Sales Header", 'OnBeforeInitPostingDescription', '', false, false)]
+    local procedure OnBeforeInitPostingDescription(var SalesHeader: Record "Sales Header"; var IsHandled: Boolean)
+    begin
+        IsHandled := true;
+    end;
+
     procedure CreateSIManagementFee(BP: record "WP Counter Area")
     var
         LRecCP: Record "Consignment Process Log";
@@ -2141,6 +2147,7 @@ codeunit 70000 "Consignment Util"
                     lrecven.TestField("Linked Customer No.");
                     clear(LRecsH);
                     Clear(MonthText);
+                    LRecSH."Posting Date" := today + 5;
                     case Format(lrecsh."Posting Date", 0, '<Month,2>') of
                         '01':
                             MonthText := 'JAN';
@@ -2172,10 +2179,9 @@ codeunit 70000 "Consignment Util"
                     lrecsh.Validate("Sell-to Customer No.", LRecVen."Linked Customer No.");
                     lrecsh."Document Date" := today;
                     // LRecSH."Posting Date" := CalcDate('CM', today) + 3;
-                    LRecSH."Posting Date" := today + 5;
-                    LRecSH."Posting Description" := 'Phí quản lý tháng ' + MonthText + InvertedComma + Format(CalcDate('CM', today), 0, '<Year,2>') + '-' + ContractDoc.Description;
+                    LRecSH."Posting Description" := 'Phí quản lý tháng: ' + MonthText + '-' + Format(CalcDate('CM', today), 0, '<Year,2>') + '-' + ContractDoc.Description;
                     //add Description-EN field to integrate with MKS system
-                    LRecSH."Description EN" := 'Management fee  ' + MonthText + InvertedComma + Format(CalcDate('CM', today), 0, '<Year,2>') + '-' + ContractDoc.Description;
+                    LRecSH."Description EN" := 'Management fee:  ' + MonthText + '-' + Format(CalcDate('CM', today), 0, '<Year,2>') + '-' + ContractDoc.Description;
                     lrecsh."Your Reference" := 'CONSIGN';
                     lrecsh.Invoice := true;
                     if lrecsh.insert(True) then begin
