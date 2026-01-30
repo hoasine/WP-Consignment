@@ -400,7 +400,7 @@ page 70013 "Posted Consignment Document"
         Clear(cuConsignUtil);
         cuConsignUtil.DeleteSalesDateByDocument_ALL(rec."Document No.");
         cuConsignUtil.GetInfo(rec."Vendor No.", rec."Start Date", rec."End Date", StoreNo);
-        cuConsignUtil.CopySalesData2(rec."Start Date", rec."End Date", StoreNo, rec."Vendor No.", rec."Document No.");
+        cuConsignUtil.CopySalesData2(rec."Start Date", rec."End Date", StoreNo, rec."Vendor No.", rec."Document No.", '', '');
         // cuconsignutil.CreateBillingEntries(rec."Document No.");
         CurrPage.Update(false);
     end;
