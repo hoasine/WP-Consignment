@@ -65,6 +65,9 @@ codeunit 70004 "Calculate Sales Entries"
         dtAssignMonthEnd: Date;
     begin
         RetailSetup.Get();
+        salesDate := DMY2Date(1, 8, 2025);
+        CopySalesData2(salesDate, salesDate, RetailSetup."Consignment Calc. Cycle");
+
         intdateFormula := RetailSetup."Consign. Calc. Days/Months";
         // intdateFormula := 1;
         // dtassignDate := Today;
@@ -90,32 +93,16 @@ codeunit 70004 "Calculate Sales Entries"
         dtToDate: Date;
     begin
         RetailSetup.Get();
-        intrecalFormula := RetailSetup."Consign. Calc. Daily";
-        // Get today's month
-        dtAssignMonth := DMY2Date(1, Date2DMY(Today, 2), Date2DMY(Today, 3));
-        dtAssignMonthEnd := CALCDATE('1M-1D', dtAssignMonth);
 
         if RetailSetup."Consignment Calc. Cycle" = RetailSetup."Consignment Calc. Cycle"::"Bi-weekly" then begin
             //Lấy từ ngày đầu tới ngày retail setup và lấy từ ngày đó đến cuối tháng
-            IF intrecalFormula <> 0 then begin
-                dtFromDate := dtAssignMonth;
-                dtToDate := DMY2Date(intrecalFormula, Date2DMY(Today, 2), Date2DMY(Today, 3));
-                CopySalesData2(dtFromDate, dtToDate, RetailSetup."Consignment Calc. Cycle");
-
-                dtFromDate := DMY2Date(intrecalFormula + 1, Date2DMY(Today, 2), Date2DMY(Today, 3));
-                dtToDate := dtAssignMonthEnd;
-                CopySalesData2(dtFromDate, dtToDate, RetailSetup."Consignment Calc. Cycle");
-            end else begin
-                // First half: 1st to 15th
-                dtFromDate := dtAssignMonth;
-                dtToDate := DMY2Date(15, Date2DMY(Today, 2), Date2DMY(Today, 3));
-                CopySalesData2(dtFromDate, dtToDate, RetailSetup."Consignment Calc. Cycle");
-
-                // Second half: 16th to end of month
-                dtFromDate := DMY2Date(16, Date2DMY(Today, 2), Date2DMY(Today, 3));
-                dtToDate := dtAssignMonthEnd;
-                CopySalesData2(dtFromDate, dtToDate, RetailSetup."Consignment Calc. Cycle");
-            end;
+            dtFromDate := RetailSetup."Consign. Calc. Start Date";
+            dtToDate := RetailSetup."Consign. Calc. End Date";
+            CopySalesData2(dtFromDate, dtToDate, RetailSetup."Consignment Calc. Cycle");
+            RetailSetup."Consign. Calc. Start Date" := 0D;
+            RetailSetup."Consign. Calc. End Date" := 0D;
+            RetailSetup."Consignment Calc. Cycle" := RetailSetup."Consignment Calc. Cycle"::Daily;
+            RetailSetup.Modify();
         end;
     end;
 
@@ -305,19 +292,19 @@ codeunit 70004 "Calculate Sales Entries"
                                     POSSales.Price := SalesEntry.Price;
                                     POSSales.UOM := SalesEntry."Unit of Measure";
                                     POSSales."Net Amount" := -SalesEntry."Net Amount"; //Exclude allowance
-                                    POSSales."VAT Amount" := -SalesEntry."VAT Amount"; //Exclude allowance
+                                                                                       //   POSSales."VAT Amount" := -SalesEntry."VAT Amount"; //Exclude allowance
 
                                     //UAT-025: Fix Tax Rate always is 0 
                                     If VATPercent <> 0 Then begin
                                         POSSales."Tax Rate" := VATPercent;
-                                        POSSales."Net Amount" := -SalesEntry."Net Amount"; //Exclude allowance
+                                        //POSSales."Net Amount" := -SalesEntry."Net Amount"; //Exclude allowance
                                         POSSales."VAT Amount" := -SalesEntry."VAT Amount"; //Exclude allowance
                                         POSSales."Discount Amount" := SalesEntry."Discount Amount" / ((100 + VATPercent) / 100); //Exclude allowance
                                         POSSales."VAT Code" := SalesEntry."VAT Code";
                                     end
                                     Else if VATPercent = 0 then begin
                                         POSSales."Tax Rate" := 0;
-                                        POSSales."Net Amount" := -SalesEntry."Net Amount" - SalesEntry."VAT Amount"; //Exclude allowance
+                                        //  POSSales."Net Amount" := -SalesEntry."Net Amount" - SalesEntry."VAT Amount"; //Exclude allowance
                                         POSSales."VAT Amount" := 0; //Exclude allowance
                                         POSSales."Discount Amount" := SalesEntry."Discount Amount" / ((100 + VATPercent) / 100);
                                         POSSales."VAT Code" := SalesEntry."VAT Code";

@@ -2,7 +2,7 @@
   "id": "02fda112-9381-4973-88c4-c92c3a6f340f",
   "name": "worldPOS-Consignment",
   "publisher": "World POS Sdn. Bhd.",
-  "version": "24.1.0.87",
+  "version": "24.1.0.95",
   "description": "Consignment Management",
   "privacyStatement": "",
   "EULA": "",
@@ -24,8 +24,8 @@
     },
     {
       "id": "da447427-42de-4320-bf10-9930392c9768",
-      "publisher": "World POS Sdn. Bhd.",
-      "name": "Be One Solutions",
+      "publisher": "Be One Solutions",
+      "name": "Taka MKS Extension",
       "version": "1.0.0.20"
     }
   ],

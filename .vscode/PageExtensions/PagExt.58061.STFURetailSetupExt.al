@@ -21,6 +21,7 @@ pageextension 58061 RetailSetupExt extends "LSC Retail Setup"
             {
                 field("Consignment Cycle"; Rec."Consignment Calc. Cycle") { Caption = 'Consignment Calc. Cycle'; ApplicationArea = All; }
                 field("Consign. Calc. Start Date"; Rec."Consign. Calc. Start Date") { ApplicationArea = All; }
+                field("Consign. Calc. End Date"; Rec."Consign. Calc. End Date") { ApplicationArea = All; }
                 field("Consign. Calc. Days/Months"; Rec."Consign. Calc. Days/Months") { ApplicationArea = All; }
                 field("Consign. Calc. Daily"; Rec."Consign. Calc. Daily") { ApplicationArea = All; }
                 field("Auto Post - PI"; Rec."Auto Post - PI") { ApplicationArea = all; }

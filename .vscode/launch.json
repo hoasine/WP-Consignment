@@ -1,4 +1,4 @@
-  /* {
+    /*  {
      "version": "0.2.0",
      "configurations": [
         {
@@ -6,9 +6,9 @@
             "request": "launch",
             "type": "al",
             "environmentType": "OnPrem",
-          "server": "http://192.168.33.108:8080/tkvposprd/",
-           "serverInstance": "tkvposprd",
-          "port": 9049,
+          "server": "http://192.168.80.54:8080/TKV/",
+           "serverInstance": "TKV",
+          "port": 7086,
            "authentication": "UserPassword",
             "startupObjectId": 50150,
             "startupObjectType": "Page",
@@ -21,7 +21,7 @@
            "schemaUpdateMode": "ForceSync"
        }
    ] 
-}  */
+}     */
 
 //   {
 //     "version": "0.2.0",
@@ -46,8 +46,8 @@
 //     ]
 // }  
 
-
-  {
+ 
+     {
     "version": "0.2.0",
     "configurations": [
         {
@@ -68,6 +68,6 @@
             "schemaUpdateMode": "ForceSync"
         }
     ]
-}   
-  
+}    
+     
  
